@@ -37,5 +37,5 @@ git clone https://github.com/mehdiborji/poreranger.git
 ```
 ## Sample input command
 ```
-python ~/poreranger/pipeline.py  --o outdir --c 4 --i poreranger/data/5mer.gz --e expname  --s
+python ~/poreranger/pipeline.py  --o outdir --c 4 --i ~/poreranger/data/5mer.gz --e expname  --s
 ```
