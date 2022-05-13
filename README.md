@@ -13,7 +13,7 @@ This program has been tested on Python 3.7.10. Please refer to the provided link
 
 [pigz](https://zlib.net/pigz/) is used for compressing output and intermediate fasta and fastq files.
 
-[MiXCR] (https://github.com/milaboratory/mixcr) is used for VDJ alignment and clonotype extraction.
+[MiXCR](https://github.com/milaboratory/mixcr) is used for VDJ alignment and clonotype extraction.
 
 [SeqKit](https://bioinf.shenwei.me/seqkit/) is used for splitting input fastq files in case of very large libraries or libraries prepared with cDNA concatenation. Deconcatenation speed-up is achieved by parallel processing of splitted input files. To enable this step set the optional boolean flag --split.
 
