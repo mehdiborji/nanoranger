@@ -11,13 +11,13 @@ One of the main challenges of nanopore data analysis for single-cell application
 
 There are different quantification 'modes' available for different libraries structures and tasks and the transcriptome reference can be modified accordingly. For whole transcriptome gene expression analysis a GENCODE transcriptome reference can be used . For 5' immune profiling this can be reduced to a reference of V transcripts and similarly for 3' immune profiling this can be a reference of C transcripts. If a set of targets is used for enrichment from cDNA, to speed up analysis one can only use a reference for those transcripts that are expected to be present.
 
-nanoranger has been primarily tested on targeted libraries generated using 10X 5' Chromium and slide-seq 3' platforms. It can be used for immune profiling and genotyping from other library types with minimal modifications.
+nanoranger has been primarily tested on targeted libraries generated using 10X 5' Chromium and slide-seq 3' platforms. It can be used for immune profiling and genotyping from other library types with minimal modifications. Further developments for generating count matrices for whole transcriptome libraries as well as addition of other chemistry types are currently underway.
 
 ## Software Dependencies 
 ### Core programs assumed to be in path:
-This program has been tested on Python 3.7.10. Please refer to the provided link for each of the following programs to install them prior to start of your data analysis using this program.
+This program has been tested on Python 3.7.10 under Centos and Ubuntu systems. Please refer to the provided link for each of the following programs to install them prior to start of your data analysis using this program. Alternatively they are available as bioconda packages.
 
-[STAR](https://github.com/alexdobin/STAR) is used for barcode correction against a set of known barcodes. By certain input parameter changes we use STAR in a Smith-Waterman mode.
+[STAR](https://github.com/alexdobin/STAR) is used for barcode correction against a set of known barcodes. By certain input parameter changes we use STAR in a Smith-Waterman-like mode.
 
 [minimap2](https://github.com/lh3/minimap2) is used for initial alignment of raw nanopore reads to a transcriptome and (subsequently based on operation mode) alignment to a genome. 
 
