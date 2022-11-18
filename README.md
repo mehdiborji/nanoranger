@@ -14,10 +14,10 @@ There are different quantification 'modes' available for different libraries str
 nanoranger has been primarily tested on targeted libraries generated using 10X 5' Chromium and slide-seq 3' platforms. It can be used for immune profiling and genotyping from other library types with minimal modifications.
 
 ## Software Dependencies 
-### Core programs assumed to be in path and:
+### Core programs assumed to be in path:
 This program has been tested on Python 3.7.10. Please refer to the provided link for each of the following programs to install them prior to start of your data analysis using this program.
 
-[STAR](https://github.com/alexdobin/STAR) is used to enable core functionality of this program, barcode correction against a set of known barcodes. By certain input parameter changes we use STAR in a Smith-Waterman mode.
+[STAR](https://github.com/alexdobin/STAR) is used for barcode correction against a set of known barcodes. By certain input parameter changes we use STAR in a Smith-Waterman mode.
 
 [minimap2](https://github.com/lh3/minimap2) is used for initial alignment of raw nanopore reads to a transcriptome and (subsequently based on operation mode) alignment to a genome. 
 
@@ -29,25 +29,14 @@ This program has been tested on Python 3.7.10. Please refer to the provided link
 
 [SeqKit](https://bioinf.shenwei.me/seqkit/) is used for splitting input fastq files in case of very large libraries or libraries prepared with cDNA concatenation. Deconcatenation speed-up is achieved by parallel processing of splitted input files. To enable this step set the optional boolean flag --split.
 
-### External Python packages used:
-pysam
-
-edlib
-
-numpy
-
-pandas
-
-matplotlib
-
-seaborn
-
-## Download
+## Download and Install
 ```
 git clone https://github.com/mehdiborji/nanoranger.git
+pip install -r /path/to/nanoranger/requirements.txt
 
 ```
-## Sample input command
+## Sample Input Command 
+The following can perform analysis of sample mitochondrial reads in 5-mer concatenation form, from a 10x 5' library:
 ```
-python ~/nanoranger/pipeline.py  --o outdir --c 4 --i ~/nanoranger/data/5mer.gz --e expname  --s
+python /path/to/nanoranger/pipeline.py --o outdir --c 4 --i ~/nanoranger/data/5mer.gz --e Mito --m 5p10XGEX --s
 ```
