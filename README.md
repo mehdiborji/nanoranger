@@ -14,8 +14,9 @@ There are different quantification 'modes' available for different libraries str
 nanoranger has been primarily tested on targeted libraries generated using 10X 5' Chromium and slide-seq 3' platforms. It can be used for immune profiling and genotyping from other library types with minimal modifications. Further developments for generating count matrices for whole transcriptome libraries as well as addition of other chemistry types are currently underway.
 
 ## Software Dependencies 
-### Core programs assumed to be in path:
-This program has been tested on Python 3.7.10 under Centos and Ubuntu systems. Please refer to the provided link for each of the following programs to install them prior to start of your data analysis using this program. Alternatively they are available as bioconda packages.
+This tool has been tested on Python 3.7.10 under Centos and Ubuntu systems.
+
+The following programs are also assumed to be in path when running the tool. Please refer to the provided link for each to install them prior to start of your data analysis using this tool. Alternatively they are available as bioconda packages.
 
 [STAR](https://github.com/alexdobin/STAR) is used for barcode correction against a set of known barcodes. By certain input parameter changes we use STAR in a Smith-Waterman-like mode.
 
