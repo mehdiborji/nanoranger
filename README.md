@@ -32,11 +32,13 @@ This program has been tested on Python 3.7.10. Please refer to the provided link
 ## Download and Install
 ```
 git clone https://github.com/mehdiborji/nanoranger.git
-pip install -r /path/to/nanoranger/requirements.txt
+cd nanoranger
+chmod -R +x *
+pip install -r requirements.txt
 
 ```
 ## Sample Input Command 
 The following can perform analysis of sample mitochondrial reads in 5-mer concatenation form, from a 10x 5' library:
 ```
-python /path/to/nanoranger/pipeline.py --o outdir --c 4 --i ~/nanoranger/data/5mer.gz --e Mito --m 5p10XGEX --s
+python pipeline.py --o outdir --c 4 --i data/5mer.gz --e Mito --m 5p10XGEX --s
 ```
