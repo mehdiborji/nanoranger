@@ -17,3 +17,9 @@ python3.8 ./pipeline.py --s \
 --i $1 --o $2 --e $3 --c $4 \
 --t data/CAR.fa \
 --g data/CAR.fa
+
+### for CAR transcripts amplified with CD247 primer use CAR_CD247.fa as reference
+#python3.8 ./pipeline.py --s \
+#--i $1 --o $2 --e $3 --c $4 \
+#--t data/CAR_CD247.fa \
+#--g data/CAR_CD247.fa
