@@ -1,3 +1,5 @@
+# read out reads mapping to gene from tagged bamfile alongside start and end of alignment
+
 import pandas as pd
 import pysam
 import sys
