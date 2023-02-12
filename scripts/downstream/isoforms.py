@@ -1,6 +1,6 @@
 # extract reads containing differentially expressed exons
 #
-# exon list to be tested should be supplied in file in this format:
+# exon list to be tested should be supplied in separate file in this format:
 #
 # CTLA4,exon2,chr2,203871378,203871487# 
 # IL7R,exon6,chr5,35874449,35874542
