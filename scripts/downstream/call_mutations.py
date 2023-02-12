@@ -1,3 +1,5 @@
+# pile up reads from tagged bam file for mutations indicated in separate file for downstream analyses
+
 import matplotlib
 matplotlib.use('Agg')
 
