@@ -2,7 +2,7 @@
 
 *nanoranger* is a processing tool for long-read single-cell and spatial transcriptomics data as described here (future link to paper). 
 
-![schema](20230211_nanoranger_scheme.png)
+![schema](nanoranger_schema.png)
 
 The input data can be obtained through sequencing of 10x Genomics whole-transcriptome cDNA libraries or amplicons obtained through targeted amplification, sequenced with Oxford Nanopore Technologies (ONT) or Pacific Biosciences devices. It is inspired by *cellranger*. 
 
