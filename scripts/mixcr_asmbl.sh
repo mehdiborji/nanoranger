@@ -1,13 +1,11 @@
 #!/bin/bash
 
-module load java/jdk-1.8u112
-
 echo 'filename = ' $2
 echo 'save_prefix = ' $1
 echo 'species = ' $3
 echo 'nthreads = ' $4
 
-#mixcr align -r $1_report_asmbl.txt -s $3 -t $4 $2 $1_asmbl.vdjca -f
+mixcr align -r $1_report_asmbl.txt -s $3 -t $4 $2 $1_asmbl.vdjca -f
 
 mixcr assemble -t $4 -r $1_report_asmbl.txt -a $1_asmbl.vdjca $1_asmbl.clna -f \
 -OclusteringFilter.specificMutationProbability=5E-2 \
