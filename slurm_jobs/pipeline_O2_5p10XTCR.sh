@@ -9,4 +9,4 @@ echo 'inputfq =' $1
 echo 'outdir =' $2
 echo 'sample =' $3
 
-python ~/poreranger/pipeline.py --c 16 --i $1 --o $2 --e $3 --s --m 5p10XTCR --human
+python ~/nanoranger/pipeline.py --c 16 --i $1 --o $2 --e $3 --s --m 5p10XTCR --human

@@ -5,9 +5,6 @@
 #SBATCH -p short
 #SBATCH -o poreranger_job_%A.out
 
-module load gcc/9.2.0
-module load python/3.8.12
-
 echo 'inputfq =' $1
 echo 'outdir =' $2
 echo 'sample =' $3

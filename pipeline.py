@@ -39,7 +39,6 @@ def align_trns(i):
 
 if mode == '5p10XGEX':
     if trns_ref is None:
-        #trns_ref = f'{pwd}/data/MT_trns.fa'
         trns_ref = f'{pwd}/data/panel_MT_trns.fa'
     """"""
     print('\n\n alignment to transcriptome reference and defusing/deconcatenation \n\n')
@@ -50,13 +49,7 @@ if mode == '5p10XGEX':
         fqs=[f'{outdir}/split/'+f for f in os.listdir(f'{outdir}/split') if f.endswith('gz')]
         
         for i in range(int(cores)): align_trns(i)
-        #pool = Pool(int(int(cores)/2))
         
-        #results = pool.map(align_trns, range(int(int(cores)/2)))
-        #pool.close()
-
-        #sams=[f'{outdir}/split/'+f for f in os.listdir(f'{outdir}/split') if f.endswith('sam')]
-
         args=[]
         for i in range(int(cores)): args.append((f'part_00{i+1}',f'{outdir}/split'))
 
@@ -149,7 +142,6 @@ if mode == '5p10XTCR':
 
     utils.write_bc_5p10X(sample,outdir,barcodes)
 
-
     subprocess.call([ f'{pwd}/scripts/barcode_ref.sh', f'{outdir}/{sample}_bcreads.fasta', f'{outdir}/{sample}_ref/'])
 
     subprocess.call([ f'{pwd}/scripts/barcode_align.sh', f'{outdir}/{sample}_BCUMI.fasta.gz', 
@@ -206,7 +198,7 @@ if mode == '3pXCR_slideseq':
     if trns_ref is None:
         #trns_ref = f'{pwd}/data/IG_C_human.fa'
         trns_ref = f'{pwd}/data/XR_C_mouse.fa'
-    """
+    """"""
     print('\n\n alignment to C gene with minimap2 \n\n')
     if split:
         
@@ -253,8 +245,6 @@ if mode == '3pXCR_slideseq':
 
     subprocess.call([ f'{pwd}/scripts/barcode_align.sh', f'{outdir}/{sample}_BCUMI.fasta.gz', 
            f'{outdir}/{sample}_ref/', f'{outdir}/{sample}_matching', cores, '-1'])
-           
-    """
 
     print('\n\n generate clone-barcode-UMI table \n\n')
 

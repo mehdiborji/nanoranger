@@ -72,14 +72,14 @@ def decon_RTX(sample,outdir):
             f1.write('+\n')
             f1.write(f'{sub_qual}\n')
         #reads.append([rlen,qlen,qstrt,qend,qstrt_mod,qend_mod,flag,ref_len])
-        #trns.append([rname,trans])
+        #trns.append([rname,transs])
         #tot+=1
         #if tot>10000000000:break
     samfile.close();f1.close()
     subprocess.call([ 'pigz', '-f', f'{outdir}/{sample}_deconcat.fastq' ])
 
 def decon_5p10XGEX(sample,outdir):
-    tot=0;bcs=[];umis=[];reads=[];trns=[];eds=[];lclip=200;rclip=80;r_hang=200
+    tot=0;bcs=[];umis=[];reads=[];trns=[];eds=[];lclip=80;rclip=20;r_hang=0
     const='CGCTCTTCCGATCT'+26*'N'+'TTTCTTATATG' #motif for 5' 10x
 
     file=f'{outdir}/{sample}_trns.sam'
@@ -101,9 +101,9 @@ def decon_5p10XGEX(sample,outdir):
         else:
             beg_qu = seq[:qstrt+rclip]
 
-        ed=edlib.align(const, beg_qu,'HW','locations',7,ad_seq)
+        ed=edlib.align(const, beg_qu,'HW','locations',6,ad_seq)
 
-        if ed['editDistance']>-1 and ed['editDistance']<8:
+        if ed['editDistance']>-1 and ed['editDistance']<7:
             start=ed['locations'][-1][0];end=ed['locations'][-1][1]
             bcumi=beg_qu[start:end]
             if qstrt>lclip:
@@ -112,7 +112,7 @@ def decon_5p10XGEX(sample,outdir):
                 start = qstrt-start
             eds.append([start,len(bcumi),ed['editDistance']])
 
-            sub_end = qend+r_hang;sub_strt = qstrt-start
+            sub_end = qend+r_hang;sub_strt = qstrt #-start
             sub_seq=seq[sub_strt:sub_end]
             sub_qual=read.qual[sub_strt:sub_end]
 
@@ -142,7 +142,7 @@ def decon_5p10XGEX(sample,outdir):
     subprocess.call([ 'pigz', '-f', f'{outdir}/{sample}_BCUMI.fasta' ])
 
 def decon_5p10XTCR(sample,outdir):
-    tot=0;bcs=[];umis=[];reads=[];trns=[];eds=[];lclip=250;rclip=30;lclipV=250;rclipV=100;
+    tot=0;bcs=[];umis=[];reads=[];trns=[];eds=[];lclip=200;rclip=20;lclipV=250;rclipV=100; # lclip large to account for missing 5' UTR in reference transcripts, must generate custom transcripts and report these unannotated regions
     const='CGCTCTTCCGATCT'+26*'N'+'TTTCTTATATG'
 
     file=f'{outdir}/{sample}_trns.sam'
@@ -164,9 +164,9 @@ def decon_5p10XTCR(sample,outdir):
         else:
             beg_qu = seq[:qstrt+rclip]
 
-        ed=edlib.align(const, beg_qu,'HW','locations',9,ad_seq)
+        ed=edlib.align(const, beg_qu,'HW','locations',6,ad_seq)
 
-        if ed['editDistance']>-1 and ed['editDistance']<10:
+        if ed['editDistance']>-1 and ed['editDistance']<7:
             start=ed['locations'][-1][0];end=ed['locations'][-1][1]
             bcumi=beg_qu[start:end]
             if qstrt>lclip:
