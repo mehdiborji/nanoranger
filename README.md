@@ -32,7 +32,9 @@ chmod -R +x *
 pip install -r requirements.txt
 
 ```
-## Sample Input Command
+## Sample Input Commands For Different Modes
+
+### The pipeline supports different chemistries through --mode flag
 
 - Generation of BAM with barcode and UMI tags for variant calling from a 10x genomics Chromium 5' library (GRCh38.primary_assembly.genome.fa.gz from https://www.gencodegenes.org/human/ can be used)
 ```
