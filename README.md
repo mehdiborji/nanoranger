@@ -6,6 +6,8 @@
 
 The input data can be obtained through sequencing of 10x Genomics whole-transcriptome cDNA libraries or amplicons obtained through targeted amplification, sequenced with Oxford Nanopore Technologies (ONT) or Pacific Biosciences devices. It is inspired by *cellranger*. 
 
+For the related R package [nanoranger.R](https://github.com/liviuspenter/nanoranger.R)
+
 ## Background
 
 Two of the main challenges of ONT data analysis for single-cell applications have been (i) higher sequencing error compared to Illumina data and (ii) the variable location of cell barcodes and molecular identifiers (UMI) within each sequenced transcript. 
