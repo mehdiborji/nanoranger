@@ -62,6 +62,10 @@ python ~/nanoranger/pipeline.py --c 8 --i ~/nanoranger/sample_fastq/97_6_CAR.fas
 python ~/nanoranger/pipeline.py --c 8 --i ~/nanoranger/sample_fastq/TCR3.fastq.gz --o TCR --e TCR --m 5p10XTCR --t ~/nanoranger/data/TR_V_human.fa --human
 ```
 
+## Downstream Analysis
+
+- Scripts for downstream analysis on the outputs of this pipeline is available through https://github.com/liviuspenter/nanoranger.R
+
 ## Software Dependencies 
 This tool has been tested on Python 3.7.10 under Centos and Ubuntu systems.
 
