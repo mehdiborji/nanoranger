@@ -285,7 +285,7 @@ def decon_3pXCR_slideseq(sample,outdir):
     samfile = pysam.AlignmentFile(f'{file}', 'r',threads=8)
     const=rev(linker)
 
-    rclip=0;lclip=200;rclipA=22;lclipA=16;r_search=150
+    rclip=0;lclip=200;rclipA=22;lclipA=16;r_search=200
     f1= open(f'{outdir}/{sample}_VDJ.fastq', 'w')
     print(f'{outdir}/{sample}_VDJ.fastq')
     for read in samfile.fetch():
@@ -324,8 +324,8 @@ def decon_3pXCR_slideseq(sample,outdir):
             for i in range(int(len(dd)/20)):
                 w=dd[20*i:20*i+40]
                 ed=edlib.align(const, w,'HW','locations',2)
-                c_eds.append(ed)
-                if ed['editDistance']>-1 and ed['editDistance']<3:
+                
+                if ed['editDistance']>-1 and ed['editDistance']<4:
                     #print(ed)
                     start=ed['locations'][0][0]+20*i
                     end=ed['locations'][0][1]+20*i
@@ -336,11 +336,14 @@ def decon_3pXCR_slideseq(sample,outdir):
                     polyA=dd[:upstart+5]
                     c_hangs.append(select)
                     polyAs.append(polyA)
+                    c_eds.append(ed['editDistance'])
                     newnames.append(newnamef)
                     break
         tot+=1
         if tot%50000==0:print(tot,' records processed')
     samfile.close();f1.close()
+    
+    pd.DataFrame([newnames,c_eds]).T.to_csv(f'{outdir}/{sample}_eds_names.csv',index=None)
 
     f2= open(f'{outdir}/{sample}_BCUMI.fasta', 'w')
     f3= open(f'{outdir}/{sample}_polyA.fasta', 'w')
@@ -363,6 +366,7 @@ def decon_3pXCR_slideseq(sample,outdir):
     subprocess.call([ 'pigz', '-f', f'{outdir}/{sample}_VDJ.fastq' ])
     subprocess.call([ 'pigz', '-f', f'{outdir}/{sample}_BCUMI.fasta' ])
     subprocess.call([ 'pigz', '-f', f'{outdir}/{sample}_polyA.fasta' ])
+    subprocess.call([ 'pigz', '-f', f'{outdir}/{sample}_eds_names.csv' ])
     
     
 def clone_filt_slideseq(sample,outdir):
@@ -441,11 +445,13 @@ def write_bc_slideseq(sample,outdir,bc_file):
     left=56-41;right=56-32;
     
     barcodes = pd.read_table(bc_file, names=['bc'])
+    
     if 'BeadBarcodes' in bc_file:
-        
         bcs=barcodes.bc.apply(lambda x: ''.join(x.split(','))).to_list()
+        
     if 'matched' in bc_file:
         bcs=barcodes.bc.apply(lambda x: x.split('-')[0]).to_list()
+        
     bc32base=['N'*left+b[:8]+linker+b[8:]+'N'*right for b in bcs]
 
     #with open(f'{outdir}/{sample}_bcreads_pad_{left}_{right}.fasta', 'w') as f:
@@ -467,7 +473,7 @@ def write_bc_5p10X(sample,outdir,bc_file):
             
 def process_matching_slideseq_XCR(sample,outdir,cloneID):
     tot=0;readIDs=[];all_AS=[];bcs=[];umis=[];reads=[];bad_bc=[]
-    samfile = pysam.AlignmentFile(f'{outdir}/{sample}_matching.bam', 'r',threads=8)
+    samfile = pysam.AlignmentFile(f'{outdir}/{sample}_matching.sam', 'r',threads=8)
     print('matching bam processing')
     for read in samfile.fetch():
         tot+=1
@@ -521,7 +527,7 @@ def process_matching_5p10X(sample,outdir):
     tot=0;all_AS=[];reads=[];bad_umi=[];bad_bc=[];rstart=[]
     read_bcumi_dic={};bcumi_dic={}
     
-    samfile = pysam.AlignmentFile(f'{outdir}/{sample}_matching.bam', 'rb',threads=8)
+    samfile = pysam.AlignmentFile(f'{outdir}/{sample}_matching.sam', 'rb',threads=8)
 
     for read in samfile.fetch():
         tot+=1
@@ -650,7 +656,7 @@ def process_matching_5p10XTCR(sample,outdir):
     tot=0;all_AS=[];reads=[];bad_umi=[];bad_bc=[];rstart=[]
     read_bcumi_dic={};bcumi_dic={};readIDs=[]
     
-    samfile = pysam.AlignmentFile(f'{outdir}/{sample}_matching.bam', 'rb',threads=8)
+    samfile = pysam.AlignmentFile(f'{outdir}/{sample}_matching.sam', 'rb',threads=8)
 
     for read in samfile.fetch():
         tot+=1

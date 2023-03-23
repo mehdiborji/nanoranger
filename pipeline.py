@@ -14,7 +14,8 @@ parser.add_argument('--expname', type=str)
 parser.add_argument('--barcodes', type=str)
 parser.add_argument('--split', default=False, action='store_true')
 parser.add_argument('--mode', type=str)
-parser.add_argument('--human', default=False, action='store_true')
+parser.add_argument('--xpecies', type=str)
+#parser.add_argument('--human', default=False, action='store_true')
 
 args = parser.parse_args()
 cores = args.cores
@@ -26,7 +27,9 @@ sample = args.expname
 barcodes = args.barcodes
 split = args.split
 mode = args.mode
-human = args.human
+#human = args.human
+xpecies = args.xpecies
+
 
 pwd=os.path.dirname(os.path.abspath(__file__))
 
@@ -129,13 +132,10 @@ if mode == '5p10XTCR':
         subprocess.call([ f'{pwd}/scripts/align_trns.sh', cores, trns_ref, infile, outdir, sample])
         utils.decon_5p10XTCR(sample,outdir)
         #subprocess.call(f'rm {outdir}/*.sam',shell=True)
-    
-    if not human: species='mmu'; print(species)
-    else: species='hsa'; print(species)
 
-    subprocess.call([ f'{pwd}/scripts/mixcr.sh', f'{outdir}/{sample}', f'{outdir}/{sample}_deconcat.fastq.gz',species, cores ])
+    subprocess.call([ f'{pwd}/scripts/mixcr.sh', f'{outdir}/{sample}', f'{outdir}/{sample}_deconcat.fastq.gz',xpecies, cores ])
     
-    #subprocess.call([ f'{pwd}/scripts/mixcr_asmbl.sh', f'{outdir}/{sample}', f'{outdir}/{sample}_deconcat.fastq.gz',species, cores ])
+    #subprocess.call([ f'{pwd}/scripts/mixcr_asmbl.sh', f'{outdir}/{sample}', f'{outdir}/{sample}_deconcat.fastq.gz',xpecies, cores ])
     
     if barcodes is None:
         barcodes=f'{pwd}/data/737K-august-2016.txt.gz'
@@ -186,11 +186,8 @@ if mode == 'RTX':
         subprocess.call([ f'{pwd}/scripts/align_trns.sh', cores, trns_ref, infile, outdir, sample])
         utils.decon_RTX(sample,outdir)
         #subprocess.call(f'rm {outdir}/*.sam',shell=True)
-    
-    if not human: species='mmu'; print(species)
-    else: species='hsa'; print(species)
 
-    subprocess.call([ f'{pwd}/scripts/mixcr.sh', f'{outdir}/{sample}', f'{outdir}/{sample}_deconcat.fastq.gz',species, cores ])
+    subprocess.call([ f'{pwd}/scripts/mixcr.sh', f'{outdir}/{sample}', f'{outdir}/{sample}_deconcat.fastq.gz',xpecies, cores ])
     
     
 if mode == '3pXCR_slideseq':
@@ -232,12 +229,11 @@ if mode == '3pXCR_slideseq':
     
     print('\n\n align VDJ with MiXCR and extract clones \n\n')
 
-    if not human: species='mmu'; print(species)
-    else: species='hsa'; print(species)
+    subprocess.call([ f'{pwd}/scripts/mixcr.sh', f'{outdir}/{sample}', f'{outdir}/{sample}_VDJ.fastq.gz',xpecies, cores ])
+    
+    
 
-    subprocess.call([ f'{pwd}/scripts/mixcr.sh', f'{outdir}/{sample}', f'{outdir}/{sample}_VDJ.fastq.gz',species, cores ])
-
-    print('\n\n align BC-UMI to a reference of barcodes with STAR  \n\n')
+    #print('\n\n align BC-UMI to a reference of barcodes with STAR  \n\n')
 
     utils.write_bc_slideseq(sample,outdir,barcodes)
 
@@ -288,10 +284,7 @@ if mode == '3p10XTCR':
     
     print('\n\n align VDJ with MiXCR and extract clones \n\n')
 
-    if not human: species='mmu'; print(species)
-    else: species='hsa'; print(species)
-
-    subprocess.call([ f'{pwd}/scripts/mixcr.sh', f'{outdir}/{sample}', f'{outdir}/{sample}_VDJ.fastq.gz',species, cores ])
+    subprocess.call([ f'{pwd}/scripts/mixcr.sh', f'{outdir}/{sample}', f'{outdir}/{sample}_VDJ.fastq.gz',xpecies, cores ])
     
     """
 

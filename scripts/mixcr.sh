@@ -1,7 +1,5 @@
 #!/bin/bash
 
-module load java/jdk-1.8u112
-
 echo 'filename = ' $2
 echo 'save_prefix = ' $1
 echo 'species = ' $3
