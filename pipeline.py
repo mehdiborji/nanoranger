@@ -199,16 +199,17 @@ if mode == '3pXCR_slideseq':
     print('\n\n alignment to C gene with minimap2 \n\n')
     if split:
         
-        
+        """
         subprocess.call(['seqkit', 'split2' ,infile, '-p', cores, '-f', '-O', f'{outdir}/split'])
         fqs=[f'{outdir}/split/'+f for f in os.listdir(f'{outdir}/split') if f.endswith('gz')]
 
         pool = Pool(int(cores))
         results = pool.map(align_trns, range(int(cores)))
         pool.close()
-        
+        """
         args=[]
         for i in range(int(cores)): args.append((f'part_00{i+1}',f'{outdir}/split'))
+        
 
         pool = Pool(int(cores))
         results = pool.starmap(utils.decon_3pXCR_slideseq, args)

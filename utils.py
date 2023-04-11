@@ -142,7 +142,12 @@ def decon_5p10XGEX(sample,outdir):
     subprocess.call([ 'pigz', '-f', f'{outdir}/{sample}_BCUMI.fasta' ])
 
 def decon_5p10XTCR(sample,outdir):
-    tot=0;bcs=[];umis=[];reads=[];trns=[];eds=[];lclip=200;rclip=20;lclipV=250;rclipV=100; # lclip large to account for missing 5' UTR in reference transcripts, must generate custom transcripts and report these unannotated regions
+    tot=0;bcs=[];umis=[];reads=[];trns=[];eds=[];lclip=200;rclip=20;
+    
+    lclipV=250; # lclip large to account for missing 5' UTR in reference transcripts, must generate custom transcripts and report these unannotated regions
+    
+    rclipV=100; # clip into direction of C gene, this will be covering CDR3 junction and J gene region and additionally parts of C gene, optimize to clip on adapaterss
+    
     const='CGCTCTTCCGATCT'+26*'N'+'TTTCTTATATG'
 
     file=f'{outdir}/{sample}_trns.sam'
@@ -285,7 +290,13 @@ def decon_3pXCR_slideseq(sample,outdir):
     samfile = pysam.AlignmentFile(f'{file}', 'r',threads=8)
     const=rev(linker)
 
-    rclip=0;lclip=200;rclipA=22;lclipA=16;r_search=200
+    rclip=80; # selection length into 3' direction of 5' softclip of C gene (for including part of C gene)
+    lclip=200; # selection length into 5' direction of 5' softclip of C gene  (for including VDJ sequence) potential optimization is to clip on PCR adapter sequence
+    
+    rclipA=22;lclipA=16;  # nul
+    
+    r_search=200 # search length into 3' direction of 3' softclip of C gene (to search for BC-UMI)
+    
     f1= open(f'{outdir}/{sample}_VDJ.fastq', 'w')
     print(f'{outdir}/{sample}_VDJ.fastq')
     for read in samfile.fetch():
@@ -303,7 +314,7 @@ def decon_3pXCR_slideseq(sample,outdir):
         else:
             end_qu = seq[qend:]
 
-        sub_end = qstrt+rclip # for including part of C gene
+        sub_end = qstrt+rclip 
         if qstrt>lclip:sub_strt = qstrt-lclip
         else:sub_strt = 0
         #sub_seq=seq[sub_strt:sub_end]
