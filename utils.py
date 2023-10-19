@@ -144,10 +144,11 @@ def decon_5p10XGEX(sample,outdir):
 def decon_5p10XTCR(sample,outdir):
     tot=0;bcs=[];umis=[];reads=[];trns=[];eds=[];lclip=200;rclip=20;
     
-    lclipV=250; # lclip large to account for missing 5' UTR in reference transcripts, must generate custom transcripts and report these unannotated regions
+    #lclipV=150; # lclip large to account for missing 5' UTR in reference transcripts, must generate custom transcripts and report these unannotated regions
     
-    rclipV=100; # clip into direction of C gene, this will be covering CDR3 junction and J gene region and additionally parts of C gene, optimize to clip on adapaterss
+    #rclipV=100; # clip into direction of C gene, this will be covering CDR3 junction and J gene region and additionally parts of C gene, optimize to clip on adapaterss
     
+    lclipV=40;rclipV=80;
     const='CGCTCTTCCGATCT'+26*'N'+'TTTCTTATATG'
 
     file=f'{outdir}/{sample}_trns.sam'
@@ -169,6 +170,48 @@ def decon_5p10XTCR(sample,outdir):
         else:
             beg_qu = seq[:qstrt+rclip]
 
+        """
+        # select only lclipV bases from 3' end of V to the 5' direction
+        if qlen>lclipV:
+            sub_strt = qend-lclipV
+        else:
+            sub_strt = qstrt
+            
+        # select only rclipV bases from 3' end of V to the 3' direction
+
+        if rlen-qend>rclipV:
+            sub_end = qend+rclipV
+        else:
+            sub_end = rlen
+        sub_seq=seq[sub_strt:sub_end]
+        sub_qual=read.qual[sub_strt:sub_end]
+        """
+        if qlen>lclipV:
+            sub_strt = qend-lclipV
+        else:
+            sub_strt = qstrt
+
+        if rlen-qend>rclipV:
+            sub_end = qend+rclipV
+        else:
+            sub_end = rlen
+
+        sub_seq=read.seq[sub_strt:sub_end]
+        sub_qual=read.qual[sub_strt:sub_end]
+
+        if flag==16 or flag==2064:
+            qstrt_mod=rlen-qend
+            qend_mod=rlen-qstrt
+        else:
+            qstrt_mod=qstrt
+            qend_mod=qend
+        
+        newnamef=f'{read.qname}_{qstrt_mod}_{qend_mod}_{flag}_{trans}'
+        f1.write(f'@{newnamef}\n')
+        f1.write(f'{sub_seq}\n')
+        f1.write('+\n')
+        f1.write(f'{sub_qual}\n')
+        
         ed=edlib.align(const, beg_qu,'HW','locations',6,ad_seq)
 
         if ed['editDistance']>-1 and ed['editDistance']<7:
@@ -180,36 +223,10 @@ def decon_5p10XTCR(sample,outdir):
                 start = qstrt-start
             eds.append([start,trans,len(bcumi),ed['editDistance']])
 
-            sub_end = qend;
-            
-            if qlen>lclipV:
-                sub_strt = qend-lclipV
-            else:
-                sub_strt = qstrt
-                
-            if rlen-qend>rclipV:
-                sub_end = qend+rclipV
-            else:
-                sub_end = rlen
-                
-            sub_seq=seq[sub_strt:sub_end]
-            sub_qual=read.qual[sub_strt:sub_end]
+            #sub_end = qend;
 
-            if flag==16 or flag==2064:
-                qstrt_mod=rlen-qend
-                qend_mod=rlen-qstrt
-            else:
-                qstrt_mod=qstrt
-                qend_mod=qend
-
-            reads.append([rlen,qlen,ref_len,qstrt_mod,qend_mod,flag])
-            trns.append([rname,trans])
-
-            newnamef=f'{read.qname}_{qstrt_mod}_{qend_mod}_{flag}_{trans}'
-            f1.write(f'@{newnamef}\n')
-            f1.write(f'{sub_seq}\n')
-            f1.write('+\n')
-            f1.write(f'{sub_qual}\n')
+            #reads.append([rlen,qlen,ref_len,qstrt_mod,qend_mod,flag])
+            #trns.append([rname,trans])
 
             f2.write(f'>{newnamef}\n')
             f2.write(f'{bcumi}\n')
@@ -217,11 +234,10 @@ def decon_5p10XTCR(sample,outdir):
         if tot%10000==0:print(tot,f' records from {sample} processed')
 
     f1.close();f2.close()
-    eds=pd.DataFrame(np.array(eds))
-    eds.to_csv(f'{outdir}/{sample}_eds.csv')
+    #eds=pd.DataFrame(np.array(eds))
+    #eds.to_csv(f'{outdir}/{sample}_eds.csv')
     subprocess.call([ 'pigz', '-f', f'{outdir}/{sample}_deconcat.fastq' ])
     subprocess.call([ 'pigz', '-f', f'{outdir}/{sample}_BCUMI.fasta' ])
-    
     
 def decon_3p10XTCR(sample,outdir):
     tot=0;eds=[]
@@ -793,3 +809,492 @@ def process_matching_5p10XTCR(sample,outdir):
     subprocess.call([ 'pigz', '-f',  f'{outdir}/{sample}_clone_bcumi.csv'])
     
 
+def decon_3p10XTCR_nuc(sample,outdir):
+    
+    tot=0;eds=[];short_bc=0
+    file=f'{outdir}/{sample}_trns.sam'
+
+    samfile = pysam.AlignmentFile(f'{file}', 'r',threads=8)
+    
+    #const=6*'A'+28*'N'+'AGATCGGAAGAGCGTCGTGT'
+    
+    const='AGATCGGAAGAGCGTCGTGT'
+    
+    r_search=2000 # search length into 3' direction of 3' softclip of V gene (to search for BC-UMI)
+
+    lclip=40;
+    f1= open(f'{outdir}/{sample}_VDJ.fastq', 'w')
+    f2= open(f'{outdir}/{sample}_BCUMI.fasta', 'w')
+    print(f'{outdir}/{sample}_VDJ.fastq')
+    for read in samfile.fetch():
+        
+        qlen=read.qlen;rlen=read.rlen;seq=read.seq;flag=read.flag
+        qstrt=read.query_alignment_start;qend=read.query_alignment_end;
+        rname=read.qname[-10:];trans=read.reference_name.split('-')[0]
+        ref_s=read.reference_start;ref_e=read.reference_end;span=ref_e-ref_s
+        
+        rclip=100 # PART INTO 3' OF V GENE (SHOULD INCLUDE CDR3 AND PARTIAL C GENE or C-J INTRON)
+
+        if rlen-qend>r_search:
+            end_qu = seq[qend:qend+r_search]
+        else:
+            end_qu = seq[qend:]
+        
+        #sub_end = qstrt+rclip # for including part of C gene (when aligning to C genes)
+        #sub_end = qend+rclip # for including CDR3 J and part of C-J-intron or C gene 
+        
+        
+        if rlen-qend>rclip:
+            sub_end = qend+rclip
+        else:
+            sub_end = rlen
+
+    
+        #if qstrt>lclip: sub_strt = qstrt-lclip
+        #else: sub_strt = 0
+        sub_strt = qstrt
+        
+        sub_seq=seq[sub_strt:sub_end]
+        sub_qual=read.qual[sub_strt:sub_end]
+        
+        rclip_truseq=40;lclip_truseq=10; step=200
+        
+        #subs.append(len(sub_seq))
+        newnamef=f'>{read.qname}_{sample}_{sub_strt}_{sub_end}_{flag}_{trans}'
+
+        if len(sub_seq)>100:
+            f1.write(f'@{read.qname}_{sample}_{sub_strt}_{sub_end}_{flag}_{trans}\n')
+            f1.write(f'{sub_seq}\n')
+            f1.write('+\n')
+            f1.write(f'{sub_qual}\n')
+            
+            number_steps=int(len(end_qu)/step)
+            #print(number_steps,len(end_qu))
+
+            for i in range(number_steps+1):
+                w=end_qu[step*i:step*(i+1)+70]
+                #print(w)
+                ed=edlib.align(const, w,'HW','locations',2)
+                
+                #print(i,ed)
+                #print(w)
+                
+                if ed['editDistance']>-1 and ed['editDistance']<3:
+                    #print(ed)
+                    start=ed['locations'][0][0]+200*i
+                    end=ed['locations'][0][1]+200*i
+                    
+                    if start-rclip_truseq<0:upstart=0
+                    else: upstart=start-rclip_truseq
+                    upend=end+lclip_truseq
+                    #bcumi=rev(end_qu[upstart:upend])
+                    
+                    bcumi=rev(end_qu[start-35:end-12])
+                    #polyA=dd[:upstart+5]
+                    #c_hangs.append(select)
+                    #polyAs.append(polyA)
+                    #print('>bcumui=',bcumi)
+                    #eds.append([ed['editDistance'],bcumi])
+        
+                    #eds.append(ed['editDistance'])
+                    #newnames.append(newnamef)
+                    if len(bcumi)>30:
+                        f2.write(f'{newnamef}\n')
+                        f2.write(f'{bcumi}\n')
+                    else:
+                        short_bc+=1
+                        #print('short_BCUMI')
+                    break
+            #print('\n')
+        
+        #ed=edlib.align(const, end_qu,'HW','locations',5,ad_seq)
+        #dist=ed['editDistance']
+        #eds.append(dist)
+        #newname=f'{rname}_q{qlen}_d{dist}_s{sub_strt}_e{sub_end}_f{flag}_{trans}'
+        #
+        #if dist>-1 and dist<6 and len(sub_seq)>100 and qlen >100:
+        #    f1.write(f'@{newname}\n')
+        #    f1.write(f'{sub_seq}\n')
+        #    f1.write('+\n')
+        #    f1.write(f'{sub_qual}\n')
+        #    #bcumi=rev(end_qu[ed['locations'][0][0]:ed['locations'][0][1]])[14:]
+        #    f2.write(f'>{newname}\n')
+        #    f2.write(f'{bcumi}\n')
+        tot+=1
+        if tot%50000==0:print(tot,' records processed')
+        #if tot>5000:break
+    samfile.close();
+    f1.close()
+    f2.close()
+    
+    print(short_bc)
+
+    subprocess.call([ 'pigz', '-f', f'{outdir}/{sample}_VDJ.fastq' ])
+    subprocess.call([ 'pigz', '-f', f'{outdir}/{sample}_BCUMI.fasta' ])
+    
+    #sort_cnt(eds).to_csv(f'{outdir}/{sample}_eds.csv')
+    #return(eds)
+
+def write_bc_3p10XTCR_nuc(sample,outdir,bc_file):
+    
+    import scanpy as sc
+    
+    adata=sc.read_10x_h5(bc_file)
+
+    sc.pp.filter_cells(adata, min_genes=4)
+
+    bcs=[a[:16] for a in adata.obs.index]
+    
+    left =16;right=28
+    bc_pad=['N'*left+b+'N'*right for b in bcs]
+    #with open(f'./outputs/737k_pad_{left}_{}.fasta', 'w') as f:
+    with open(f'{outdir}/{sample}_bcreads.fasta', 'w') as f:
+        for i, b in enumerate(bc_pad):
+            f.write(f">{bcs[i]}\n")
+            f.write(f"{bc_pad[i]}\n")
+
+def process_matching_3p10XTCR_nuc(sample,outdir):
+    
+    tot=0;all_AS=[];reads=[];bad_umi=[];bad_bc=[];rstart=[]
+    read_bcumi_dic={};bcumi_dic={};readIDs=[]
+    
+    samfile = pysam.AlignmentFile(f'{outdir}/{sample}_matching.sam', 'rb',threads=8)
+
+    for read in samfile.fetch():
+        tot+=1
+        AS=read.get_tag('AS')
+        all_AS.append([AS,read.flag])
+        if AS>=14 and read.flag==0:
+            #print(read)
+            name=read.query_name
+            bc=read.reference_name
+            seq=read.query
+            try:
+                pairs=np.array(read.aligned_pairs)
+                pair_dic=dict(zip(pairs[:,1],pairs[:,0]))
+                #rstart.append(pair_dic[54])
+                umi=seq[pair_dic[32]:pair_dic[32]+12] #left pad +16 = 16 +16
+            except:umi='N'
+            try:bcumi_dic[bc].append(umi)
+            except:bcumi_dic[bc]=[umi]
+            if len(umi)<12:
+            
+                bad_bc.append(bc)
+            else:
+                read_bcumi_dic[name]=[bc,umi]
+                readIDs.append([name,bc,umi])
+                #print(bc,umi,seq,'\n')
+                #reads.append([read.seq,umi,bc]) #for debuging loc of umi bc
+                
+        if tot%10000==0:print(tot,'barcode candidates processed')
+    
+    print('number of short UMI reads = ',len(bad_bc))
+
+    all_AS=np.array(all_AS)
+
+    scores=sort_cnt(all_AS[all_AS[:,1]==0][:,0])
+    scores.columns=['score','count']
+    scores.to_csv(f'{outdir}/{sample}_barcode_scores.csv',index=None)
+    plt.rcParams['figure.figsize'] = (5, 3)
+    plt.rcParams['ytick.right'] = True
+    plt.rcParams['ytick.labelright'] = True
+    sns.barplot(data=scores[scores.score>8],x='score',y='count');
+    plt.savefig(f'{outdir}/{sample}_barcode_scores.pdf',bbox_inches='tight');
+    plt.close()
+
+    read_keys=list(read_bcumi_dic.keys())
+    bcumi_dic={};read_bc_umi_trns_dic={};noneq=[]
+    for i,read in enumerate(read_keys):
+        bcumi=read_bcumi_dic[read]
+        #rname=read.split('_')[0]
+        #rname='_'.join(read.split('_')[:-1])
+        trns=read.split('_')[4]
+        #trns_org=read.split('_')[-2]
+        #if trns==trns_org:
+        CB=bcumi[0]
+        UB=bcumi[1]
+        try:
+            bcumi_dic[CB].append(UB)
+        except:
+            bcumi_dic[CB]=[UB]
+        read_bc_umi_trns_dic[read]=[CB,UB,trns]
+        if i%20000==0 and i>0: print(i,'Read-BC-UMI-Transcript tuples saved')
+        #if i>10000: break
+
+    umis=[];reads=[]
+    for i,bc in enumerate(bcumi_dic.keys()):
+        umis.append(np.unique(bcumi_dic[bc]).shape[0])
+        reads.append(len(bcumi_dic[bc]))
+        #if i%1000==0: print(i,'barcodes processed')
+
+    bcumi_dedup=pd.DataFrame([bcumi_dic.keys(),umis,reads]).T
+    bcumi_dedup.columns=['bc','umi_cnt','read_cnt']
+    bcumi_dedup.umi_cnt=bcumi_dedup.umi_cnt.astype('int')
+    bcumi_dedup.read_cnt=bcumi_dedup.read_cnt.astype('int')
+    #bcumi_dedup=bcumi_dedup.sort_values(by='read_cnt',ascending=False)
+    bcumi_dedup=bcumi_dedup.sort_values(by='umi_cnt',ascending=False)
+    bcumi_dedup.set_index('bc',inplace=True)
+    bcumi_dedup['dup_rate']=bcumi_dedup.read_cnt/bcumi_dedup.umi_cnt
+
+    bcumi_dedup[bcumi_dedup.umi_cnt>0].to_csv(f'{outdir}/{sample}_bcumi_dedup.csv')#[bcumi_dedup.umi_cnt>100].shape
+    #subprocess.call([ 'pigz', '-f',  f'{outdir}/{sample}_clone_bcumi.csv'])
+    
+    #logcnt=np.log10(bcumi_dedup.read_cnt)
+    #logcntumi=np.log10(bcumi_dedup.umi_cnt)
+    #data=pd.concat([logcntumi,logcnt],axis=1)
+    #data=data[data.umi_cnt>0]
+    #plt.rcParams['figure.figsize'] = (5, 3)
+    #sns.kdeplot(data=data);
+    #plt.savefig(f'{outdir}/{sample}_bcumi.pdf',bbox_inches='tight');
+    #plt.close()
+
+    #plt.rcParams['figure.figsize'] = (5, 5)
+    #plt.plot(x=np.log10(np.arange(1,len(bcumi_dedup.umi_cnt)+1)),y=np.log10(bcumi_dedup.umi_cnt));
+    plt.plot(np.log10(np.arange(1,len(bcumi_dedup.umi_cnt)+1)),np.log10(bcumi_dedup.umi_cnt));
+    plt.ylabel('log10 UMI counts')
+    plt.xlabel('log10 cell rank')
+    plt.title('library knee plot')
+    plt.savefig(f'{outdir}/{sample}_knee_UMI.pdf',bbox_inches='tight');
+    plt.close()
+    
+    
+    #plt.rcParams['figure.figsize'] = (5, 5)
+    #plt.plot(x=np.log10(np.arange(1,len(bcumi_dedup.umi_cnt)+1)),y=np.log10(bcumi_dedup.umi_cnt));
+    bcumi_dedup=bcumi_dedup.sort_values(by='read_cnt',ascending=False)
+    plt.plot(np.log10(np.arange(1,len(bcumi_dedup.read_cnt)+1)),np.log10(bcumi_dedup.read_cnt));
+
+    plt.ylabel('log10 read counts')
+    plt.xlabel('log10 cell rank')
+    plt.title('library knee plot')
+    plt.savefig(f'{outdir}/{sample}_knee_reads.pdf',bbox_inches='tight');
+    plt.close()
+    
+    print('clone_bcumi producing')
+    
+    cloneID=pd.read_csv(f'{outdir}/{sample}_cloneID_filtered.csv.gz',index_col=0)
+    bcumiID=np.array(readIDs)
+    #return(readIDs)
+    
+    bcumiID_df=pd.DataFrame(bcumiID,columns=['ID','bc','umi'])
+    bcumiID_df.set_index('ID',inplace=True)
+    merged_IDs=pd.merge(bcumiID_df,cloneID,how='inner',left_index=True,right_index=True)
+    merged_IDs=merged_IDs.sort_values(by=['cloneId','bc','umi'])
+    merged_IDs.to_csv(f'{outdir}/{sample}_clone_bcumi.csv',index=None)
+    
+    subprocess.call([ 'pigz', '-f',  f'{outdir}/{sample}_clone_bcumi.csv'])
+    
+    
+def decon_3p10XGEX(sample,outdir):
+    tot=0;eds=[];short_BC=0
+    file=f'{outdir}/{sample}_trns.sam'
+
+    #const=6*'A'+28*'N'+'AGATCGGAAGAGCGTCGTGT'
+    
+    const='AGATCGGAAGAGCGTCGTGT'
+
+    f1= open(f'{outdir}/{sample}_deconcat.fastq', 'w')
+    f2= open(f'{outdir}/{sample}_BCUMI.fasta', 'w')
+    
+    samfile = pysam.AlignmentFile(f'{file}', 'r')
+    
+    r_search=700 # search length into 3' direction of 3' softclip of V gene (to search for BC-UMI)
+    
+    l_search=500
+    
+    rclip=1; #to keep in deconcat file
+
+    lclip=1; #to keep in deconcat file
+    
+    for read in samfile.fetch():
+        
+        qlen=read.qlen;rlen=read.rlen;seq=read.seq;flag=read.flag
+        qstrt=read.query_alignment_start;qend=read.query_alignment_end;
+        rname=read.qname[-10:];trans=read.reference_name#.split('-')[0]
+        ref_s=read.reference_start;ref_e=read.reference_end;span=ref_e-ref_s
+        
+        # PART TO 3' OF V GENE (SHOULD INCLUDE CDR3 AND PARTIAL C GENE)
+
+        if rlen-qend>r_search:
+            end_qu = seq[qend-70:qend+r_search]
+        else:
+            end_qu = seq[qend-70:]
+        
+        if qstrt<l_search:
+            beg_qu = seq[:qstrt]
+        else:
+            beg_qu = seq[qstrt-l_search:qstrt]
+
+        if rlen-qend>rclip:
+            sub_end = qend+rclip
+        else:
+            sub_end = rlen
+            
+        if qstrt<lclip:
+            sub_strt = 0
+        else:
+            sub_strt = qstrt-lclip
+        
+        sub_seq=seq[sub_strt:sub_end]
+        sub_qual=read.qual[sub_strt:sub_end]
+        
+        rclip_truseq=40;lclip_truseq=10; step=200
+        
+        if flag==16 or flag==2064:
+            qstrt_mod=rlen-qend
+            qend_mod=rlen-qstrt
+        else:
+            qstrt_mod=qstrt
+            qend_mod=qend
+        
+        #subs.append(len(sub_seq))
+        #newnamef=f'{read.qname}_{sample}_{sub_strt}_{sub_end}_{flag}_{trans}'
+        newnamef=f'{read.qname}_{qstrt_mod}_{qend_mod}_{flag}_{trans}'
+
+        if len(sub_seq)>50:
+            f1.write(f'@{newnamef}\n')
+            f1.write(f'{sub_seq}\n')
+            f1.write('+\n')
+            f1.write(f'{sub_qual}\n')
+            
+            number_steps=int(len(end_qu)/step)
+            #print(number_steps,len(end_qu))
+
+            for i in range(number_steps+1):
+                w=end_qu[step*i:step*(i+1)+70]
+                #print(w)
+                ed=edlib.align(const, w,'HW','locations',2)
+                
+                #print(i,ed)
+                #print(w)
+                
+                if ed['editDistance']>-1 and ed['editDistance']<3:
+                    #print(ed)
+                    start=ed['locations'][0][0]+200*i
+                    end=ed['locations'][0][1]+200*i
+                    
+                    if start-rclip_truseq<0:upstart=0
+                    else: upstart=start-rclip_truseq
+                    upend=end+lclip_truseq
+                    #bcumi=rev(end_qu[upstart:upend])
+                    
+                    bcumi=rev(end_qu[start-35:end-12])
+                    #polyA=dd[:upstart+5]
+                    #c_hangs.append(select)
+                    #polyAs.append(polyA)
+                    
+                    #print('>bcumui=',bcumi)
+                    #eds.append([ed['editDistance'],bcumi])
+        
+                    eds.append([i,ed['editDistance']])
+                    #newnames.append(newnamef)
+                
+                    if len(bcumi)>30:
+                        f2.write(f'>{newnamef}\n')
+                        f2.write(f'{bcumi}\n')
+                    else:
+                        #print('endqu >>>>>>>>',end_qu)
+                        #print('query >>>>>>>',sub_seq)
+                        #print(f'sub part>>>> {i}>',w,ed)
+                        #print(f'qend = {qend}, rlen = {rlen}')
+                        #print('\n')
+                        
+                        short_BC+=1
+                    break
+                if ed['editDistance']>=3 or ed['editDistance']<0:
+                    eds.append([i,ed['editDistance']])
+            #print('\n')
+            
+        #if len(sub_seq)<=50:
+        #    print('sub_seq too short',qlen)
+            
+        #ed=edlib.align(const, end_qu,'HW','locations',5,ad_seq)
+        #dist=ed['editDistance']
+        #eds.append(dist)
+        #newname=f'{rname}_q{qlen}_d{dist}_s{sub_strt}_e{sub_end}_f{flag}_{trans}'
+        #
+        #if dist>-1 and dist<6 and len(sub_seq)>100 and qlen >100:
+        #    f1.write(f'@{newname}\n')
+        #    f1.write(f'{sub_seq}\n')
+        #    f1.write('+\n')
+        #    f1.write(f'{sub_qual}\n')
+        #    #bcumi=rev(end_qu[ed['locations'][0][0]:ed['locations'][0][1]])[14:]
+        #    f2.write(f'>{newname}\n')
+        #    f2.write(f'{bcumi}\n')
+        tot+=1
+        if tot%100000==0:print(tot,' records processed')
+        
+        #if tot>1000:
+        #    print(short_BC)
+        #    break
+    samfile.close();
+    f1.close()
+    f2.close()
+
+    subprocess.call([ 'pigz', '-f', f'{outdir}/{sample}_deconcat.fastq' ])
+    subprocess.call([ 'pigz', '-f', f'{outdir}/{sample}_BCUMI.fasta' ])
+    pd.DataFrame(eds).to_csv(f'{outdir}/{sample}_eds.csv')
+    #sort_cnt(eds).to_csv(f'{outdir}/{sample}_eds.csv')
+    
+    return(eds)
+
+def write_bc_3p10XGEX(sample,outdir,uncorrected,barcodes):
+
+    raw_bcs=pd.read_csv(uncorrected,index_col=0)
+
+    white_bcs = pd.read_table(barcodes, names=['bc'])
+
+    shared=set(white_bcs['bc']) & set(raw_bcs.index)
+
+    raw_bcs=raw_bcs[raw_bcs.index.isin(shared)]
+
+    raw_bcs=raw_bcs[raw_bcs['0']>50]
+    
+    bcs=raw_bcs.index
+    
+    left =9;right=21
+    bc_pad=['N'*left+b+'N'*right for b in bcs]
+    #with open(f'./outputs/737k_pad_{left}_{}.fasta', 'w') as f:
+    with open(f'{outdir}/{sample}_bcreads.fasta', 'w') as f:
+        for i, b in enumerate(bc_pad):
+            f.write(f">{bcs[i]}\n")
+            f.write(f"{bc_pad[i]}\n")
+            
+def process_matching_3p10XGEX(sample,outdir):
+    
+    tot=0;all_AS=[];reads=[];bad_umi=[];bad_bc=[];rstart=[]
+    read_bcumi_dic={};bcumi_dic={};readIDs=[]
+    
+    samfile = pysam.AlignmentFile(f'{outdir}/{sample}_matching.sam', 'r')
+
+    for read in samfile.fetch():
+        tot+=1
+        AS=read.get_tag('AS')
+        all_AS.append([AS,read.flag])
+        if AS>=14 and read.flag==0:
+            #print(read)
+            name=read.query_name
+            bc=read.reference_name
+            seq=read.query
+            try:
+                pairs=np.array(read.aligned_pairs)
+                pair_dic=dict(zip(pairs[:,1],pairs[:,0]))
+                #rstart.append(pair_dic[54])
+                umi=seq[pair_dic[25]:pair_dic[25]+12] #left pad +16 = 9 +16
+            except:umi='N'
+            
+            if len(umi)<12:
+                bad_bc.append(bc)
+            else:
+                with open(f'{outdir}/barcodes/{bc}_{sample}.csv', 'a') as output:
+                    line=f'{bc},{umi},{name}\n'
+                    output.write(line)
+                    
+        if tot%100000==0:print(tot,'barcode candidates processed')
+    print('number of short UMI reads = ',len(bad_bc))
+
+    all_AS=np.array(all_AS)
+
+    scores=sort_cnt(all_AS[all_AS[:,1]==0][:,0])
+    scores.columns=['score','count']
+    scores.to_csv(f'{outdir}/{sample}_barcode_scores.csv',index=None)
+    

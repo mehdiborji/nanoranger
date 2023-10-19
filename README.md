@@ -36,6 +36,17 @@ pip install -r requirements.txt
 
 ### The pipeline supports different chemistries through --mode flag
 
+- Analysis of TCR/BCRs from a slide-seq (Curio) spatial transcriptomics library (Human and Mouse C gene transcripts available in data folder and alignment supported by MiXCR)
+
+```
+python ~/nanoranger/pipeline.py --c 8 --i ~/nanoranger/sample_fastq/slideseq_XCR.fastq.gz --o XCR --e Puck_220509_18 --m 3pXCR_slideseq --b ~/nanoranger/data/slideseq.matched.barcodes.tsv.gz --t ~/nanoranger/data/XR_C_mouse.fa --x mmu
+```
+
+- Analysis of TCRs from a 10x genomics Chromium 5' library (Human and Mouse V gene transcripts available in data folder and alignment supported by MiXCR)
+```
+python ~/nanoranger/pipeline.py --c 8 --i ~/nanoranger/sample_fastq/TCR3.fastq.gz --o TCR --e TCR --m 5p10XTCR --t ~/nanoranger/data/TR_V_human.fa --x hsa
+```
+
 - Generation of BAM with barcode and UMI tags for variant calling from a 10x genomics Chromium 5' library (GRCh38.primary_assembly.genome.fa.gz from https://www.gencodegenes.org/human/ can be used)
 ```
 python ~/nanoranger/pipeline.py --c 8 --i ~/nanoranger/sample_fastq/1022_DNMT3A_RUNX1_SF3B1.fastq.gz --o AML_1022 --e DNMT3A_RUNX1_SF3B1 --m 5p10XGEX --t ~/nanoranger/data/panel_MT_trns.fa --g ~/refs/GRCh38.primary_assembly.genome_v41.fa.gz
@@ -55,11 +66,6 @@ python ~/nanoranger/pipeline.py --c 8 --i ~/nanoranger/sample_fastq/1019_mtDNA.f
 - Analysis of CAR-T cells from a 10x genomics Chromium 5' library to detect CAR and CD28 transcripts
 ```
 python ~/nanoranger/pipeline.py --c 8 --i ~/nanoranger/sample_fastq/97_6_CAR.fastq.gz --o 97_6 --e CAR --m 5p10XGEX --t ~/nanoranger/data/CAR_CD28.fa --g ~/nanoranger/data/CAR_CD28.fa
-```
-
-- Analysis of TCRs from a 10x genomics Chromium 5' library (Human and Mouse V gene transcripts available in data folder and alignment supported by MiXCR)
-```
-python ~/nanoranger/pipeline.py --c 8 --i ~/nanoranger/sample_fastq/TCR3.fastq.gz --o TCR --e TCR --m 5p10XTCR --t ~/nanoranger/data/TR_V_human.fa --human
 ```
 
 ## Downstream Analysis

@@ -18,7 +18,7 @@ STAR \
 --alignIntronMax 1 \
 --outFileNamePrefix $out_name \
 --outSAMmode NoQS \
---outSAMattributes AS MD \
+--outSAMattributes AS nM MD \
 --outFilterMultimapNmax 1 \
 --outFilterMultimapScoreRange 0 \
 --outFilterScoreMinOverLread 0 \
@@ -31,10 +31,10 @@ STAR \
 --seedSearchStartLmax 4 \
 --seedSearchStartLmaxOverLread 0.9 \
 --alignEndsType EndToEnd \
---readMapNumber $5 \
+--readNameSeparator space \
 --readFilesCommand zcat
 
-#--readNameSeparator .. \
+
 #--outSAMtype BAM Unsorted \
 
 #module load gcc/9.2.0
