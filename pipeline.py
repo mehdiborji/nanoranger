@@ -401,7 +401,7 @@ if mode == '3p10XTCR_nuc':
 if mode == '3p10XGEX_PacBio':
     if trns_ref is None:
         trns_ref = f'{pwd}/data/panel_MT_trns.fa'
-    """
+    
     print('\n\n alignment to transcriptome reference and defusing/deconcatenation \n\n')
 
     if split:
@@ -429,7 +429,7 @@ if mode == '3p10XGEX_PacBio':
 
     print('\n\n alignment of BC-UMI candidates to a reference of barcodes with STAR  \n\n')
     
-    
+    """
 
     if barcodes is None:
         barcodes=f'{pwd}/data/3M-february-2018.txt.gz'
@@ -448,7 +448,7 @@ if mode == '3p10XGEX_PacBio':
         subprocess.call([ f'{pwd}/scripts/barcode_align.sh', f'{outdir}/split/part_{i+1}_BCUMI.fasta.gz', 
            f'{outdir}/{sample}_ref/', f'{outdir}/split/part_{i+1}_matching', cores, '-1'])
         
-    """
+    
     
     args=[]
     
@@ -463,7 +463,7 @@ if mode == '3p10XGEX_PacBio':
 
     #subprocess.call([ f'{pwd}/scripts/barcode_align.sh', f'{outdir}/{sample}_BCUMI.fasta.gz', 
     #       f'{outdir}/{sample}_ref/', f'{outdir}/{sample}_matching', cores, '-1'])
-    """
+    
     print('\n\n alignment to genome and generation of BC-UMI-Transcript tagged BAM \n\n')
 
     if genome_ref is None:
