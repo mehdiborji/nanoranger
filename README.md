@@ -38,7 +38,7 @@ pip install -r requirements.txt
 
 #### 3pXCR_slideseq
 
-- Analysis of TCR/BCRs from a **slide-seq (Curio)** spatial transcriptomics library (Human and Mouse C gene transcripts available in data folder and alignment supported by MiXCR)
+- Analysis of **TCR/BCRs** from a **slide-seq (Curio)** spatial transcriptomics library (Human and Mouse C gene transcripts available in data folder and alignment supported by MiXCR)
 
 ```
 python ~/nanoranger/pipeline.py \
@@ -52,30 +52,83 @@ python ~/nanoranger/pipeline.py \
         --x mmu
 ```
 
-- Analysis of TCRs from a 10x genomics Chromium 5' library (Human and Mouse V gene transcripts available in data folder and alignment supported by MiXCR)
+#### 5p10XTCR
+
+- Analysis of **TCRs** from a **10x genomics Chromium 5'** library (Human and Mouse V gene transcripts available in data folder and alignment supported by MiXCR)
+
 ```
-python ~/nanoranger/pipeline.py --c 8 --i ~/nanoranger/sample_fastq/TCR3.fastq.gz --o TCR --e TCR --m 5p10XTCR --t ~/nanoranger/data/TR_V_human.fa --x hsa
+python ~/nanoranger/pipeline.py \
+        --c 8 \
+        --i ~/nanoranger/sample_fastq/TCR3.fastq.gz \
+        --o TCR \
+        --e TCR \
+        --m 5p10XTCR \
+        --t ~/nanoranger/data/TR_V_human.fa \
+        --x hsa
 ```
 
-- Generation of BAM with barcode and UMI tags for variant calling from a 10x genomics Chromium 5' library (GRCh38.primary_assembly.genome.fa.gz from https://www.gencodegenes.org/human/ can be used)
+#### 5p10XGEX
+
+- Generation of **BAM** with barcode and UMI tags for variant calling from a **10x genomics Chromium 5'** library (GRCh38.primary_assembly.genome.fa.gz from https://www.gencodegenes.org/human/ can be used)
 ```
-python ~/nanoranger/pipeline.py --c 8 --i ~/nanoranger/sample_fastq/1022_DNMT3A_RUNX1_SF3B1.fastq.gz --o AML_1022 --e DNMT3A_RUNX1_SF3B1 --m 5p10XGEX --t ~/nanoranger/data/panel_MT_trns.fa --g ~/refs/GRCh38.primary_assembly.genome_v41.fa.gz
+python ~/nanoranger/pipeline.py \
+        --c 8 \
+        --i ~/nanoranger/sample_fastq/1022_DNMT3A_RUNX1_SF3B1.fastq.gz \
+        --o AML_1022 \
+        --e DNMT3A_RUNX1_SF3B1_AML_1022 \
+        --m 5p10XGEX \
+        --t ~/nanoranger/data/panel_MT_trns.fa \
+        --g ~/refs/GRCh38.primary_assembly.genome_v41.fa.gz
 ```
 
-- Detection of known fusions from a 10x genomics Chromium 5' library (for fusions we may skip genome alignment by realigning the extracted transcripts to the initial transcriptome reference)
+- Detection of **known fusions** from a **10x genomics Chromium 5'** library (for fusions we may skip genome alignment by realigning the extracted transcripts to the initial transcriptome reference)
 
 ```
 python ~/nanoranger/pipeline.py --c 8 --i ~/nanoranger/sample_fastq/K562_Kasumi1_BCRABL1_RUNX1_RUNX1T1.fastq.gz --o K562_Kasumi1 --e fusion --m 5p10XGEX --t ~/nanoranger/data/RUNX1_RUNX1T1_ABL1_BCR.fa --g ~/nanoranger/data/RUNX1_RUNX1T1_ABL1_BCR.fa
 ```
 
-- Analysis of mitochondrial reads in 15-mer arrays from a 10x genomics Chromium 5' library (we may skip whole genome alignment by realigning the extracted transcripts just to the mitochondrial chromosome)
+- Analysis of **MT transcripts in 15-mer MAS-seq arrays** from a **10x genomics Chromium 5'** library (we may skip whole genome alignment by realigning the extracted transcripts just to the mitochondrial chromosome)
 ```
-python ~/nanoranger/pipeline.py --c 8 --i ~/nanoranger/sample_fastq/1019_mtDNA.fastq.gz --o AML_1019 --e mito_15mer --m 5p10XGEX --t ~/nanoranger/data/MT_trns.fa --g ~/nanoranger/data/MT_chr.fa
+python ~/nanoranger/pipeline.py \
+        --c 8 \
+        --i ~/nanoranger/sample_fastq/1019_mtDNA.fastq.gz \
+        --o AML_1019 \
+        --e mito_15mer_AML_1019 \
+        --m 5p10XGEX \
+        --t ~/nanoranger/data/MT_trns.fa \
+        --g ~/nanoranger/data/MT_chr.fa
 ```
 
-- Analysis of CAR-T cells from a 10x genomics Chromium 5' library to detect CAR and CD28 transcripts
+- Analysis of CAR-T cells from a **10x genomics Chromium 5'** library to **detect CAR and CD28** transcripts
 ```
-python ~/nanoranger/pipeline.py --c 8 --i ~/nanoranger/sample_fastq/97_6_CAR.fastq.gz --o 97_6 --e CAR --m 5p10XGEX --t ~/nanoranger/data/CAR_CD28.fa --g ~/nanoranger/data/CAR_CD28.fa
+python ~/nanoranger/pipeline.py \
+        --c 8 \
+        --i ~/nanoranger/sample_fastq/97_6_CAR.fastq.gz \
+        --o 97_6 \
+        --e CAR_97_6 \
+        --m 5p10XGEX \
+        --t ~/nanoranger/data/CAR_CD28.fa \
+        --g ~/nanoranger/data/CAR_CD28.fa
+```
+
+- Generation of **BAM** with barcode and UMI tags and **genes-by-cells matrix** from a **10x genomics Chromium 3'** library (GRCh38.primary_assembly.genome.fa.gz from https://www.gencodegenes.org/human/ can be used)
+
+```
+Coming Soon!
+```
+
+#### 3p10XGEX
+- Generation of **BAM** with barcode and UMI tags and **genes-by-cells matrix** from a **10x genomics Chromium 3'** library (GRCh38.primary_assembly.genome.fa.gz from https://www.gencodegenes.org/human/ can be used)
+
+```
+Coming Soon!
+```
+
+#### 3p10XTCR
+- Analysis of **TCRs** from a **10x genomics Chromium 3'** library (Human and Mouse C gene transcripts available in data folder and alignment supported by MiXCR)
+
+```
+Coming Soon!
 ```
 
 ## Downstream Analysis
