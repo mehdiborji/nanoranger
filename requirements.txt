@@ -5,3 +5,4 @@ biopython==1.79
 matplotlib==3.5.1
 seaborn==0.11.2
 edlib==1.3.9
+scanpy==1.9.3
