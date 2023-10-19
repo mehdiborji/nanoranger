@@ -36,10 +36,20 @@ pip install -r requirements.txt
 
 ### The pipeline supports different chemistries through --mode flag
 
-- Analysis of TCR/BCRs from a slide-seq (Curio) spatial transcriptomics library (Human and Mouse C gene transcripts available in data folder and alignment supported by MiXCR)
+#### 3pXCR_slideseq
+
+- Analysis of TCR/BCRs from a **slide-seq (Curio)** spatial transcriptomics library (Human and Mouse C gene transcripts available in data folder and alignment supported by MiXCR)
 
 ```
-python ~/nanoranger/pipeline.py --c 8 --i ~/nanoranger/sample_fastq/slideseq_XCR.fastq.gz --o XCR --e Puck_220509_18 --m 3pXCR_slideseq --b ~/nanoranger/data/slideseq.matched.barcodes.tsv.gz --t ~/nanoranger/data/XR_C_mouse.fa --x mmu
+python ~/nanoranger/pipeline.py \
+        --c 8 \
+        --i ~/nanoranger/sample_fastq/slideseq_XCR.fastq.gz \
+        --o XCR \
+        --e Puck_220509_18 \
+        --m 3pXCR_slideseq \
+        --b ~/nanoranger/data/slideseq.matched.barcodes.tsv.gz \
+        --t ~/nanoranger/data/XR_C_mouse.fa \
+        --x mmu
 ```
 
 - Analysis of TCRs from a 10x genomics Chromium 5' library (Human and Mouse V gene transcripts available in data folder and alignment supported by MiXCR)
