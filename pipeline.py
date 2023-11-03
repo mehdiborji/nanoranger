@@ -60,6 +60,42 @@ def split_fastq(infile,outdir,cores):
         print(splitted_file,' a part of splitted input fastq does not exist, will perform splitting')
         subprocess.call(['seqkit', 'split2' ,infile, '-p', cores, '-f', '-O', f'{outdir}/split'])
 
+def split_fastq_unzipped(infile,outdir,cores):
+    
+    infq_fname = infile.split('/')[-1]
+
+    infq_name = infq_fname.split('.fastq')[0]
+
+    splitted_file = f'{outdir}/split/{infq_name}.part_001.fastq'
+
+    if os.path.isfile(splitted_file):
+        print(splitted_file,' a part of splitted input fastq exists, will not perform splitting assuming completion of splitting')
+    else:
+        print(splitted_file,' a part of splitted input fastq does not exist, will perform splitting')
+        
+        if infile.endswith('gz'):
+            
+            infile_unz = infile.replace('.gz','')
+            if os.path.isfile(infile_unz):
+                print(infile_unz,'unzipped file exists')
+                subprocess.call(['seqkit', 'split2' ,infile_unz, '-p', cores, '-f', '-O', f'{outdir}/split'])
+            else:
+                
+                if os.path.isfile(f'{outdir}/{infq_name}.fastq'):
+                    subprocess.call(['seqkit', 'split2' ,f'{outdir}/{infq_name}.fastq', '-p', cores, '-f', '-O', f'{outdir}/split'])
+                else:
+                    print(infile_unz,'unzipped file and unzipped local does not exist')
+                    print(f'pigz -cd {infile} > {outdir}/{infq_name}.fastq')
+                    command=f'pigz -cd {infile} > {outdir}/{infq_name}.fastq'
+                    subprocess.call(command,shell=True)
+                    
+                    subprocess.call(['seqkit', 'split2' ,f'{outdir}/{infq_name}.fastq', '-p', cores, '-f', '-O', f'{outdir}/split'])
+                
+        
+                
+        #command=f'rm {unR1} {unR2}'
+        #subprocess.call(command,shell=True)
+
 if mode == '5p10XGEX':
     if trns_ref is None:
         trns_ref = f'{pwd}/data/panel_MT_trns.fa'
@@ -130,7 +166,6 @@ if mode == '5p10XTCR':
 
     if split:
         
-        spl
         inputfq_name=inputfq.split('/')[-1]
 
         inputfq_name=inputfq_name.split('.fastq')[0]
@@ -142,7 +177,6 @@ if mode == '5p10XTCR':
         else:
             print(split_fastq,' does not exist, will perform splitting')
             subprocess.call(['seqkit', 'split2' ,infile, '-p', cores, '-f', '-O', f'{outdir}/split'])
-        
         
         fqs=sorted([f'{outdir}/split/'+f for f in os.listdir(f'{outdir}/split') if f.endswith('gz')])
         for i in range(int(cores)): align_trns(i)
@@ -406,20 +440,22 @@ if mode == '3p10XGEX_PacBio':
 
     if split:
         
+        split_fastq_unzipped(infile,outdir,cores)
         #subprocess.call(['seqkit', 'split2' ,infile, '-p', cores, '-f', '-O', f'{outdir}/split'])
-        fqs=sorted([f'{outdir}/split/'+f for f in os.listdir(f'{outdir}/split') if f.endswith('gz')])
+        fqs=sorted([f'{outdir}/split/'+f for f in os.listdir(f'{outdir}/split') if f.endswith('fastq')])
         
         for i in range(int(cores)): align_trns(i)
         
         args=[]
         for i in range(int(cores)): args.append((f'part_{i+1}',f'{outdir}/split'))
-
+        
+        
         pool = Pool(int(cores))
         results = pool.starmap(utils.decon_3p10XGEX, args)
         pool.close()
 
-        subprocess.call(f'cat {outdir}/split/*_decon*.gz > {outdir}/{sample}_deconcat.fastq.gz',shell=True)
-        subprocess.call(f'cat {outdir}/split/*_BCUMI*.gz > {outdir}/{sample}_BCUMI.fasta.gz',shell=True)
+        #subprocess.call(f'cat {outdir}/split/*_decon*.gz > {outdir}/{sample}_deconcat.fastq.gz',shell=True)
+        #subprocess.call(f'cat {outdir}/split/*_BCUMI*.gz > {outdir}/{sample}_BCUMI.fasta.gz',shell=True)
         #subprocess.call(f'rm -r {outdir}/split/',shell=True)
 
     else:

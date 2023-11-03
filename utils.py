@@ -1083,7 +1083,6 @@ def process_matching_3p10XTCR_nuc(sample,outdir):
     
     subprocess.call([ 'pigz', '-f',  f'{outdir}/{sample}_clone_bcumi.csv'])
     
-    
 def decon_3p10XGEX(sample,outdir):
     tot=0;eds=[];short_BC=0
     file=f'{outdir}/{sample}_trns.sam'
@@ -1200,26 +1199,10 @@ def decon_3p10XGEX(sample,outdir):
                         
                         short_BC+=1
                     break
-                if ed['editDistance']>=3 or ed['editDistance']<0:
-                    eds.append([i,ed['editDistance']])
+                #if ed['editDistance']>=3 or ed['editDistance']<0:
+                #    eds.append([i,ed['editDistance']])
             #print('\n')
             
-        #if len(sub_seq)<=50:
-        #    print('sub_seq too short',qlen)
-            
-        #ed=edlib.align(const, end_qu,'HW','locations',5,ad_seq)
-        #dist=ed['editDistance']
-        #eds.append(dist)
-        #newname=f'{rname}_q{qlen}_d{dist}_s{sub_strt}_e{sub_end}_f{flag}_{trans}'
-        #
-        #if dist>-1 and dist<6 and len(sub_seq)>100 and qlen >100:
-        #    f1.write(f'@{newname}\n')
-        #    f1.write(f'{sub_seq}\n')
-        #    f1.write('+\n')
-        #    f1.write(f'{sub_qual}\n')
-        #    #bcumi=rev(end_qu[ed['locations'][0][0]:ed['locations'][0][1]])[14:]
-        #    f2.write(f'>{newname}\n')
-        #    f2.write(f'{bcumi}\n')
         tot+=1
         if tot%100000==0:print(tot,' records processed')
         
@@ -1232,10 +1215,8 @@ def decon_3p10XGEX(sample,outdir):
 
     subprocess.call([ 'pigz', '-f', f'{outdir}/{sample}_deconcat.fastq' ])
     subprocess.call([ 'pigz', '-f', f'{outdir}/{sample}_BCUMI.fasta' ])
-    pd.DataFrame(eds).to_csv(f'{outdir}/{sample}_eds.csv')
+    #pd.DataFrame(eds).to_csv(f'{outdir}/{sample}_eds.csv')
     #sort_cnt(eds).to_csv(f'{outdir}/{sample}_eds.csv')
-    
-    return(eds)
 
 def write_bc_3p10XGEX(sample,outdir,uncorrected,barcodes):
 
