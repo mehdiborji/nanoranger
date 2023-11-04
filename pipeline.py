@@ -488,8 +488,6 @@ if mode == '3p10XGEX_PacBio':
     
     for i in range(int(cores)): align_bcs(i)
     
-    
-    
     args=[]
     
     for i in range(int(cores)): args.append((f'part_{i+1}',f'{outdir}/split'))

@@ -9,7 +9,7 @@ import edlib
 import subprocess
 import json
 
-print('poreranger packagess loaded')
+print('poreranger packages loaded')
 
 linker='TCTTCAGCGTTCCCGAGA'
 ad_seq=[('N', 'A'), ('N', 'T'), ('N', 'G'), ('N', 'C')]
@@ -1127,7 +1127,7 @@ def decon_3p10XGEX(sample,outdir):
         
         qlen=read.qlen;rlen=read.rlen;seq=read.seq;flag=read.flag
         qstrt=read.query_alignment_start;qend=read.query_alignment_end;
-        rname=read.qname[-10:];trans=read.reference_name#.split('-')[0]
+        trans=read.reference_name#.split('-')[0]
         ref_s=read.reference_start;ref_e=read.reference_end;span=ref_e-ref_s
         
         # PART TO 3' OF V GENE (SHOULD INCLUDE CDR3 AND PARTIAL C GENE)
@@ -1236,9 +1236,9 @@ def decon_3p10XGEX(sample,outdir):
             #print('\n')
             
         tot+=1
-        if tot%4e3==0:print(tot,' records processed')
+        if tot%4e5==0:print(tot,' records processed')
         
-        if tot>4e4:
+        if tot>1e9:
             print('number of short BCUMIs = ',short_BC)
             break
     samfile.close();
@@ -1345,12 +1345,11 @@ def process_matching_3p10XGEX(sample,outdir):
                 #with open(f'{outdir}/barcodes/{bc}_{sample}.csv', 'a') as output:
                 #    line=f'{bc},{umi},{name}\n'
                 #    output.write(line)
-    
             
     with open(quads_json, 'w') as json_file:
         json.dump(quad_dict, json_file)
                     
-        if tot%100000==0:
+        if tot%400000==0:
             print(tot,'barcode candidates processed')
             
     print('number of short UMI reads = ',len(bad_bc))
