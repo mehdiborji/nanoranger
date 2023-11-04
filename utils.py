@@ -1102,21 +1102,16 @@ def decon_3p10XGEX(sample,outdir):
     
     tot=0;eds=[];short_BC=0
     file=f'{outdir}/{sample}_trns.sam'
-
-    #const=6*'A'+28*'N'+'AGATCGGAAGAGCGTCGTGT'
-    
-    const='AGATCGGAAGAGCGTCGTGT'
-
-    f1= open(f'{outdir}/{sample}_deconcat.fastq', 'w')
-    f2= open(f'{outdir}/{sample}_BCUMI.fasta', 'w')
-    
+    samfile = pysam.AlignmentFile(f'{file}', 'r')
+    bc_count_dict = {}
     bc_count_json = f'{outdir}/{sample}_bc_count.json' 
     if os.path.isfile(bc_count_json):
         print(bc_count_json,' exists, skip')
         return
+
+    #const=6*'A'+28*'N'+'AGATCGGAAGAGCGTCGTGT'
     
-    samfile = pysam.AlignmentFile(f'{file}', 'r')
-    
+    const='AGATCGGAAGAGCGTCGTGT'
     r_search=700 # search length into 3' direction of 3' softclip of V gene (to search for BC-UMI)
     
     l_search=500
@@ -1125,7 +1120,8 @@ def decon_3p10XGEX(sample,outdir):
 
     lclip=1; #to keep in deconcat file
     
-    bc_count_dict = {}
+    f1= open(f'{outdir}/{sample}_deconcat.fastq', 'w')
+    f2= open(f'{outdir}/{sample}_BCUMI.fasta', 'w')
     
     for read in samfile.fetch():
         
@@ -1156,8 +1152,8 @@ def decon_3p10XGEX(sample,outdir):
         else:
             sub_strt = qstrt-lclip
         
-        sub_seq=seq[sub_strt:sub_end]
-        sub_qual=read.qual[sub_strt:sub_end]
+        sub_seq = seq[sub_strt:sub_end]   # subset only the selected parts to save 
+        sub_qual = read.qual[sub_strt:sub_end] 
         
         rclip_truseq=40;lclip_truseq=10
         
@@ -1203,9 +1199,9 @@ def decon_3p10XGEX(sample,outdir):
                     #upend=end+lclip_truseq
                     #bcumi=rev(end_qu[upstart:upend])
                     
-                    bcumi=rev(end_qu[start-35:start+4])
+                    bcumi = rev(end_qu[start-16-12-4:start+3])
                     
-                    seq_counter(bc_count_dict,bcumi[4:4+16])
+                    seq_counter(bc_count_dict,bcumi[3:3+16])
                     #print(ed)
                     #print(w)
                     #print(end_qu[start-35:end-12])
@@ -1240,9 +1236,9 @@ def decon_3p10XGEX(sample,outdir):
             #print('\n')
             
         tot+=1
-        if tot%1000==0:print(tot,' records processed')
+        if tot%4e3==0:print(tot,' records processed')
         
-        if tot>3000:
+        if tot>4e4:
             print('number of short BCUMIs = ',short_BC)
             break
     samfile.close();
@@ -1261,6 +1257,12 @@ def decon_3p10XGEX(sample,outdir):
     #sort_cnt(eds).to_csv(f'{outdir}/{sample}_eds.csv')
 
 def write_bc_3p10XGEX(sample,outdir,barcodes):
+    
+    bcreads_fasta = f'{outdir}/{sample}_bcreads.fasta'
+    
+    if os.path.isfile(bcreads_fasta):
+        print(bcreads_fasta,' exists, skip')
+        return
     
     jsons = sorted([f for f in os.listdir(f'{outdir}/split/') if f.endswith('json')])
 
@@ -1294,10 +1296,12 @@ def write_bc_3p10XGEX(sample,outdir,barcodes):
 
     bcs = raw_bcs[raw_bcs.read_count>1].index
     
-    left =9;right=21
+    # 3 on Truseq, 4 on polyT
+    left = 3 + 1
+    right = 12 + 4 + 1
     bc_pad=['N'*left+b+'N'*right for b in bcs]
     #with open(f'./outputs/737k_pad_{left}_{}.fasta', 'w') as f:
-    with open(f'{outdir}/{sample}_bcreads.fasta', 'w') as f:
+    with open(bcreads_fasta, 'w') as f:
         for i, b in enumerate(bc_pad):
             f.write(f">{bcs[i]}\n")
             f.write(f"{bc_pad[i]}\n")
@@ -1322,14 +1326,16 @@ def process_matching_3p10XGEX(sample,outdir):
         all_AS.append([AS,read.flag])
         if AS>=14 and read.flag==0:
             #print(read)
-            name=read.query_name
-            bc=read.reference_name
-            seq=read.query
+            name = read.query_name 
+            trns = '_'.join(name.split('_')[4:])
+            bc = read.reference_name
+            seq = read.query
+            umi_start = 4 + 16  #left pad + 16 = 4 + 16
+            umi_length = 12
             try:
-                pairs=np.array(read.aligned_pairs)
-                pair_dic=dict(zip(pairs[:,1],pairs[:,0]))
-                #rstart.append(pair_dic[54])
-                umi=seq[pair_dic[25]:pair_dic[25]+12] #left pad +16 = 9 +16
+                pairs = np.array(read.aligned_pairs)
+                pair_dic = dict(zip(pairs[:,1],pairs[:,0]))
+                umi = seq[ pair_dic[umi_start] : pair_dic[umi_start] + umi_length ] #left pad + 16 = 4 + 16
             except:umi='N'
             
             if len(umi)<12:
@@ -1344,7 +1350,9 @@ def process_matching_3p10XGEX(sample,outdir):
     with open(quads_json, 'w') as json_file:
         json.dump(quad_dict, json_file)
                     
-        if tot%100000==0:print(tot,'barcode candidates processed')
+        if tot%100000==0:
+            print(tot,'barcode candidates processed')
+            
     print('number of short UMI reads = ',len(bad_bc))
 
     all_AS=np.array(all_AS)

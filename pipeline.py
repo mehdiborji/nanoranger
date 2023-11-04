@@ -38,13 +38,26 @@ pwd=os.path.dirname(os.path.abspath(__file__))
 if not os.path.exists(outdir): os.makedirs(outdir)
 
 def align_trns(i):
+    
     print('working on alignment of ', fqs[i])
+    
     sam_file=f'{outdir}/split/part_{i+1}_trns.sam'
     if os.path.isfile(sam_file):
         print('alignment file,', sam_file,' exists, will not realign')
     else:
         print('alignment file,', sam_file,' does not exist, will align')
         subprocess.call([ f'{pwd}/scripts/align_trns.sh',cores, trns_ref,fqs[i],f'{outdir}/split',f'part_{i+1}'])
+        
+def align_bcs(i):
+    
+    sam_file=f'{outdir}/split/part_{i+1}_matching.sam'
+    
+    if os.path.isfile(sam_file):
+        print('matching file,', sam_file,' exists, will not realign')
+    else:
+        print('matching file,', sam_file,' does not exist, will align')
+        subprocess.call([ f'{pwd}/scripts/barcode_align.sh', f'{outdir}/split/part_{i+1}_BCUMI.fasta.gz', 
+           f'{outdir}/{sample}_ref/', f'{outdir}/split/part_{i+1}_matching', cores, '-1'])
         
 def split_fastq(infile,outdir,cores):
     
@@ -55,9 +68,9 @@ def split_fastq(infile,outdir,cores):
     splitted_file = f'{outdir}/split/{inputfq_name}.part_001.fastq.gz'
 
     if os.path.isfile(splitted_file):
-        print(splitted_file,' a part of splitted input fastq exists, will not perform splitting assuming completion of splitting')
+        print('splitted input fastq exists, will not perform splitting assuming completion of splitting')
     else:
-        print(splitted_file,' a part of splitted input fastq does not exist, will perform splitting')
+        print('splitted input fastq does not exist, will perform splitting')
         subprocess.call(['seqkit', 'split2' ,infile, '-p', cores, '-f', '-O', f'{outdir}/split'])
 
 def split_fastq_unzipped(infile,outdir,cores):
@@ -69,9 +82,9 @@ def split_fastq_unzipped(infile,outdir,cores):
     splitted_file = f'{outdir}/split/{infq_name}.part_001.fastq'
 
     if os.path.isfile(splitted_file):
-        print(splitted_file,' a part of splitted input fastq exists, will not perform splitting assuming completion of splitting')
+        print('splitted input fastq exists, will not perform splitting assuming completion of splitting')
     else:
-        print(splitted_file,' a part of splitted input fastq does not exist, will perform splitting')
+        print('splitted input fastq does not exist, will perform splitting')
         
         if infile.endswith('gz'):
             
@@ -444,12 +457,13 @@ if mode == '3p10XGEX_PacBio':
         #subprocess.call(['seqkit', 'split2' ,infile, '-p', cores, '-f', '-O', f'{outdir}/split'])
         fqs=sorted([f'{outdir}/split/'+f for f in os.listdir(f'{outdir}/split') if f.endswith('fastq')])
         
+        print('\n ----alignment to transcriptome---- \n')
         for i in range(int(cores)): align_trns(i)
         
         args=[]
         for i in range(int(cores)): args.append((f'part_{i+1}',f'{outdir}/split'))
         
-        
+        print('\n ----deconcatenation---- \n')
         pool = Pool(int(cores))
         results = pool.starmap(utils.decon_3p10XGEX, args)
         pool.close()
@@ -472,21 +486,21 @@ if mode == '3p10XGEX_PacBio':
     
     subprocess.call([ f'{pwd}/scripts/barcode_ref.sh', f'{outdir}/{sample}_bcreads.fasta', f'{outdir}/{sample}_ref/'])
     
-    for i in range(int(cores)):
-        subprocess.call([ f'{pwd}/scripts/barcode_align.sh', f'{outdir}/split/part_{i+1}_BCUMI.fasta.gz', 
-           f'{outdir}/{sample}_ref/', f'{outdir}/split/part_{i+1}_matching', cores, '-1'])
-        
+    for i in range(int(cores)): align_bcs(i)
     
-    """
+    
+    
     args=[]
     
     for i in range(int(cores)): args.append((f'part_{i+1}',f'{outdir}/split'))
     
-    if not os.path.exists(f'{outdir}/split/barcodes'): os.makedirs(f'{outdir}/split/barcodes')
+    #if not os.path.exists(f'{outdir}/split/barcodes'): os.makedirs(f'{outdir}/split/barcodes')
 
     pool = Pool(int(cores))
     results = pool.starmap(utils.process_matching_3p10XGEX, args)
     pool.close()
+    
+    """
    
 
     #subprocess.call([ f'{pwd}/scripts/barcode_align.sh', f'{outdir}/{sample}_BCUMI.fasta.gz', 
