@@ -465,27 +465,19 @@ if mode == '3p10XGEX_PacBio':
 
     print('\n\n alignment of BC-UMI candidates to a reference of barcodes with STAR  \n\n')
     
-    """
-
     if barcodes is None:
-        barcodes=f'{pwd}/data/3M-february-2018.txt.gz'
-        
-    uncorrected='/n/scratch3/users/m/meb521/revios_s2.csv.gz'
+        whitelist = f'{pwd}/data/3M-february-2018.txt.gz'
 
-    utils.write_bc_3p10XGEX(sample,outdir,uncorrected,barcodes)
+    utils.write_bc_3p10XGEX(sample, outdir, whitelist)
     
-    
-
-
     subprocess.call([ f'{pwd}/scripts/barcode_ref.sh', f'{outdir}/{sample}_bcreads.fasta', f'{outdir}/{sample}_ref/'])
-    
     
     for i in range(int(cores)):
         subprocess.call([ f'{pwd}/scripts/barcode_align.sh', f'{outdir}/split/part_{i+1}_BCUMI.fasta.gz', 
            f'{outdir}/{sample}_ref/', f'{outdir}/split/part_{i+1}_matching', cores, '-1'])
         
     
-    
+    """
     args=[]
     
     for i in range(int(cores)): args.append((f'part_{i+1}',f'{outdir}/split'))

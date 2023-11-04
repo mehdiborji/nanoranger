@@ -7,14 +7,29 @@ import seaborn as sns
 import os
 import edlib
 import subprocess
+import json
 
-print('poreranger packages loaded')
+print('poreranger packagess loaded')
+
+linker='TCTTCAGCGTTCCCGAGA'
+ad_seq=[('N', 'A'), ('N', 'T'), ('N', 'G'), ('N', 'C')]
 
 def rev(seq):
     return(str(Seq(seq).reverse_complement()))
 
-linker='TCTTCAGCGTTCCCGAGA'
-ad_seq=[('N', 'A'), ('N', 'T'), ('N', 'G'), ('N', 'C')]
+def seq_counter(seq_dict,seq_instance):
+    if seq_dict.get(seq_instance) is None:
+        seq_dict[seq_instance] = 1
+    else:
+        seq_dict[seq_instance]+= 1
+
+def quad_dict_store(quad_dict,quad_key,quad_items):
+    
+    if quad_dict.get(quad_key) is None:
+        quad_dict[quad_key] = [quad_items]
+    else:
+        quad_dict[quad_key].extend([quad_items])
+        
 
 def sort_cnt(arr):
     npcnt=np.array(np.unique(arr,return_counts=True)).T
@@ -1084,6 +1099,7 @@ def process_matching_3p10XTCR_nuc(sample,outdir):
     subprocess.call([ 'pigz', '-f',  f'{outdir}/{sample}_clone_bcumi.csv'])
     
 def decon_3p10XGEX(sample,outdir):
+    
     tot=0;eds=[];short_BC=0
     file=f'{outdir}/{sample}_trns.sam'
 
@@ -1094,6 +1110,11 @@ def decon_3p10XGEX(sample,outdir):
     f1= open(f'{outdir}/{sample}_deconcat.fastq', 'w')
     f2= open(f'{outdir}/{sample}_BCUMI.fasta', 'w')
     
+    bc_count_json = f'{outdir}/{sample}_bc_count.json' 
+    if os.path.isfile(bc_count_json):
+        print(bc_count_json,' exists, skip')
+        return
+    
     samfile = pysam.AlignmentFile(f'{file}', 'r')
     
     r_search=700 # search length into 3' direction of 3' softclip of V gene (to search for BC-UMI)
@@ -1103,6 +1124,8 @@ def decon_3p10XGEX(sample,outdir):
     rclip=1; #to keep in deconcat file
 
     lclip=1; #to keep in deconcat file
+    
+    bc_count_dict = {}
     
     for read in samfile.fetch():
         
@@ -1136,7 +1159,7 @@ def decon_3p10XGEX(sample,outdir):
         sub_seq=seq[sub_strt:sub_end]
         sub_qual=read.qual[sub_strt:sub_end]
         
-        rclip_truseq=40;lclip_truseq=10; step=200
+        rclip_truseq=40;lclip_truseq=10
         
         if flag==16 or flag==2064:
             qstrt_mod=rlen-qend
@@ -1155,28 +1178,42 @@ def decon_3p10XGEX(sample,outdir):
             f1.write('+\n')
             f1.write(f'{sub_qual}\n')
             
+            step=200
             number_steps=int(len(end_qu)/step)
+            
             #print(number_steps,len(end_qu))
 
             for i in range(number_steps+1):
                 w=end_qu[step*i:step*(i+1)+70]
                 #print(w)
-                ed=edlib.align(const, w,'HW','locations',2)
+                ed=edlib.align(const, w,'HW','locations',3)
                 
                 #print(i,ed)
                 #print(w)
                 
-                if ed['editDistance']>-1 and ed['editDistance']<3:
+                if ed['editDistance']>-1 and ed['editDistance']<4:
                     #print(ed)
                     start=ed['locations'][0][0]+200*i
                     end=ed['locations'][0][1]+200*i
                     
-                    if start-rclip_truseq<0:upstart=0
-                    else: upstart=start-rclip_truseq
-                    upend=end+lclip_truseq
+                    
+                    #print(end_qu)
+                    #if start-rclip_truseq<0:upstart=0
+                    #else: upstart=start-rclip_truseq
+                    #upend=end+lclip_truseq
                     #bcumi=rev(end_qu[upstart:upend])
                     
-                    bcumi=rev(end_qu[start-35:end-12])
+                    bcumi=rev(end_qu[start-35:start+4])
+                    
+                    seq_counter(bc_count_dict,bcumi[4:4+16])
+                    #print(ed)
+                    #print(w)
+                    #print(end_qu[start-35:end-12])
+                    #print(end_qu[start-16:start])
+                    #print(end_qu[start-16:start+4])
+                    #print(end_qu[start:end])
+                    #print('------')
+                    
                     #polyA=dd[:upstart+5]
                     #c_hangs.append(select)
                     #polyAs.append(polyA)
@@ -1184,7 +1221,7 @@ def decon_3p10XGEX(sample,outdir):
                     #print('>bcumui=',bcumi)
                     #eds.append([ed['editDistance'],bcumi])
         
-                    eds.append([i,ed['editDistance']])
+                    #eds.append([i,ed['editDistance']])
                     #newnames.append(newnamef)
                 
                     if len(bcumi)>30:
@@ -1196,7 +1233,6 @@ def decon_3p10XGEX(sample,outdir):
                         #print(f'sub part>>>> {i}>',w,ed)
                         #print(f'qend = {qend}, rlen = {rlen}')
                         #print('\n')
-                        
                         short_BC+=1
                     break
                 #if ed['editDistance']>=3 or ed['editDistance']<0:
@@ -1204,33 +1240,59 @@ def decon_3p10XGEX(sample,outdir):
             #print('\n')
             
         tot+=1
-        if tot%100000==0:print(tot,' records processed')
+        if tot%1000==0:print(tot,' records processed')
         
-        #if tot>1000:
-        #    print(short_BC)
-        #    break
+        if tot>3000:
+            print('number of short BCUMIs = ',short_BC)
+            break
     samfile.close();
     f1.close()
     f2.close()
 
     subprocess.call([ 'pigz', '-f', f'{outdir}/{sample}_deconcat.fastq' ])
     subprocess.call([ 'pigz', '-f', f'{outdir}/{sample}_BCUMI.fasta' ])
+    
+    with open(bc_count_json, 'w') as json_file:
+        json.dump(bc_count_dict, json_file)
+        
+    #read_cnt=pd.Series(bc_count_dict)
+    #read_cnt.to_csv(f'{outdir}/{sample}_bc_count.csv')
     #pd.DataFrame(eds).to_csv(f'{outdir}/{sample}_eds.csv')
     #sort_cnt(eds).to_csv(f'{outdir}/{sample}_eds.csv')
 
-def write_bc_3p10XGEX(sample,outdir,uncorrected,barcodes):
+def write_bc_3p10XGEX(sample,outdir,barcodes):
+    
+    jsons = sorted([f for f in os.listdir(f'{outdir}/split/') if f.endswith('json')])
 
-    raw_bcs=pd.read_csv(uncorrected,index_col=0)
+    bc_agg={}
+    for i in range(len(jsons)):
+        with open(f'{outdir}/split/{jsons[i]}', 'r') as json_file:
+            bc_count = json.load(json_file)
+            for k in bc_count:
+                if bc_agg.get(k) is not None:
+                    bc_agg[k] += bc_count[k]
+                else:
+                    bc_agg[k] = bc_count[k]
+
+    read_cnt=pd.Series(bc_agg)
+    read_cnt.name='read_count'
+    read_cnt.to_csv(f'{outdir}/{sample}_bc_read_count.csv')
+    
+    raw_bcs=pd.read_csv(f'{outdir}/{sample}_bc_read_count.csv',index_col=0)
 
     white_bcs = pd.read_table(barcodes, names=['bc'])
+    
+    print(white_bcs.shape)
 
-    shared=set(white_bcs['bc']) & set(raw_bcs.index)
+    shared = set(white_bcs['bc']) & set(raw_bcs.index)
+    
+    print(len(shared))
 
     raw_bcs=raw_bcs[raw_bcs.index.isin(shared)]
-
-    raw_bcs=raw_bcs[raw_bcs['0']>50]
     
-    bcs=raw_bcs.index
+    print(raw_bcs)
+
+    bcs = raw_bcs[raw_bcs.read_count>1].index
     
     left =9;right=21
     bc_pad=['N'*left+b+'N'*right for b in bcs]
@@ -1246,6 +1308,13 @@ def process_matching_3p10XGEX(sample,outdir):
     read_bcumi_dic={};bcumi_dic={};readIDs=[]
     
     samfile = pysam.AlignmentFile(f'{outdir}/{sample}_matching.sam', 'r')
+    
+    quad_dict = {}
+    quads_json = f'{outdir}/{sample}_quads.json'
+    
+    if os.path.isfile(quads_json):
+        print(quads_json,' exists, skip')
+        return
 
     for read in samfile.fetch():
         tot+=1
@@ -1266,9 +1335,14 @@ def process_matching_3p10XGEX(sample,outdir):
             if len(umi)<12:
                 bad_bc.append(bc)
             else:
-                with open(f'{outdir}/barcodes/{bc}_{sample}.csv', 'a') as output:
-                    line=f'{bc},{umi},{name}\n'
-                    output.write(line)
+                quad_dict_store(quad_dict,bc,[umi,trns])
+                #with open(f'{outdir}/barcodes/{bc}_{sample}.csv', 'a') as output:
+                #    line=f'{bc},{umi},{name}\n'
+                #    output.write(line)
+    
+            
+    with open(quads_json, 'w') as json_file:
+        json.dump(quad_dict, json_file)
                     
         if tot%100000==0:print(tot,'barcode candidates processed')
     print('number of short UMI reads = ',len(bad_bc))
