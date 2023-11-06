@@ -492,14 +492,13 @@ if mode == '3p10XGEX_PacBio':
     
     for i in range(int(cores)): args.append((f'part_{i+1}',f'{outdir}/split'))
     
-    #if not os.path.exists(f'{outdir}/split/barcodes'): os.makedirs(f'{outdir}/split/barcodes')
-
     pool = Pool(int(cores))
     results = pool.starmap(utils.process_matching_3p10XGEX, args)
     pool.close()
     
     """
-   
+
+    #if not os.path.exists(f'{outdir}/split/barcodes'): os.makedirs(f'{outdir}/split/barcodes')
 
     #subprocess.call([ f'{pwd}/scripts/barcode_align.sh', f'{outdir}/{sample}_BCUMI.fasta.gz', 
     #       f'{outdir}/{sample}_ref/', f'{outdir}/{sample}_matching', cores, '-1'])
