@@ -1229,7 +1229,7 @@ def write_bc_3p10XGEX(sample,outdir,barcodes):
         print(bcreads_fasta,' exists, skip')
         return
     
-    jsons = sorted([f for f in os.listdir(f'{outdir}/split/') if f.endswith('json')])
+    jsons = sorted([f for f in os.listdir(f'{outdir}/split/') if f.endswith('bc_count.json')])
 
     bc_agg={}
     for i in range(len(jsons)):
@@ -1325,4 +1325,68 @@ def process_matching_3p10XGEX(sample,outdir):
     scores=sort_cnt(all_AS[all_AS[:,1]==0][:,0])
     scores.columns=['score','count']
     scores.to_csv(f'{outdir}/{sample}_barcode_scores.csv',index=None)
+    
+def make_count_mtx_3p10XGEX(sample,outdir):
+    
+    adata_file = f'{outdir}/{sample}_counts_adata.h5ad'
+    
+    if os.path.isfile(adata_file):
+        print(adata_file,' exists, skip')
+        return
+    
+    jsons = sorted([f for f in os.listdir(f'{outdir}/split/') if f.endswith('quads.json')])
+    
+    #jsons = jsons[:subset]
+    #print(len(jsons))
+
+    data_agg = {}
+
+    for i in tqdm(range(len(jsons))):
+        with open(f'{dir_split}{jsons[i]}', 'r') as json_file:
+            data_sub = json.load(json_file)
+            print(jsons[i],len(data_sub))
+            for k in data_sub:
+                if data_agg.get(k) is not None:
+                    data_agg[k].extend(data_sub[k])
+                else:
+                    data_agg[k]=data_sub[k]
+
+                    
+    counts_np = np.zeros( (len(a_white),len(t_white)) )
+    counts_df = pd.DataFrame(counts_np, index=a_white.index, columns=t_white.index)
+
+    all_list = []
+    for a_bc in tqdm(a_white.index):
+        
+        if a_bc not in data_agg:
+            print(f'{a_bc} not in data_agg')
+            continue
+
+        umi_tbc = data_agg[a_bc]
+        umi_bc_dic = {}
+        for a in umi_tbc:
+            if umi_bc_dic.get(a[0]) is not None:
+                umi_bc_dic[a[0]].append(a[1])
+            else:
+                umi_bc_dic[a[0]] = [a[1]]
+
+        t_bc_cnt={}
+        for k in umi_bc_dic:
+            umi_reads = len(umi_bc_dic[k])
+            if umi_reads > threshold:
+                uni_t_bc=set(umi_bc_dic[k])
+                if len(uni_t_bc) > 1:
+                    bcs, cnts = np.unique(umi_bc_dic[k],return_counts=True)
+                    if np.max(cnts/umi_reads) > .74: # the concordance to accept the UMI 2/2, 3/3, 3/4, 4/5 or better 
+                        t_bc = bcs[np.argmax(cnts/umi_reads)]
+                        seq_counter(t_bc_cnt,t_bc)
+                else:
+                    t_bc = list(uni_t_bc)[0]
+                    seq_counter(t_bc_cnt,t_bc)
+
+        counts_df.loc[a_bc,list(t_bc_cnt.keys())]=list(t_bc_cnt.values())
+        
+    counts_df = AnnData(counts_df,dtype='float32')
+    counts_df.X = csr_matrix(counts_df.X)
+    counts_df.write_h5ad(adata_file,compression='gzip')
     

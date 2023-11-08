@@ -496,6 +496,9 @@ if mode == '3p10XGEX_PacBio':
     results = pool.starmap(utils.process_matching_3p10XGEX, args)
     pool.close()
     
+    
+    utils.make_count_mtx_3p10XGEX(sample, outdir)
+    
     """
 
     #if not os.path.exists(f'{outdir}/split/barcodes'): os.makedirs(f'{outdir}/split/barcodes')
