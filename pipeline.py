@@ -286,26 +286,35 @@ if mode == '3pXCR_slideseq':
     print('\n\n alignment to C gene with minimap2 \n\n')
     if split:
         
-        split_fastq = f'{outdir}/split/{sample}.part_001.fastq.gz'
+        merged_VDJ = f'{outdir}/{sample}_VDJ.fastq.gz'
         
-        if os.path.isfile(split_fastq):
-            print(split_fastq,' exists')
+        if os.path.isfile(merged_VDJ):    
+            print('merged VDJ file,', merged_VDJ,' exists, will not extract or align')
         else:
-            subprocess.call(['seqkit', 'split2' ,infile, '-p', cores, '-f', '-O', f'{outdir}/split'])
-        
-        fqs=sorted([f'{outdir}/split/'+f for f in os.listdir(f'{outdir}/split') if f.endswith('gz')])
-        for i in range(int(cores)): align_trns(i)
-        
-        args=[]
-        for i in range(int(cores)): args.append((f'part_{i+1}',f'{outdir}/split'))
+            print('merged VDJ file,', merged_VDJ,' does not exist, will extract or align')
+            
+            split_fastq = f'{outdir}/split/{sample}.part_001.fastq.gz'
 
-        pool = Pool(int(cores))
-        results = pool.starmap(utils.decon_3pXCR_slideseq, args)
-        pool.close()
+            if os.path.isfile(split_fastq):
+                print(split_fastq,' exists, will not split')
+            else:
+                print(split_fastq,' does not exist, will split')
+                subprocess.call(['seqkit', 'split2' ,infile, '-p', cores, '-f', '-O', f'{outdir}/split'])
+
+            fqs=sorted([f'{outdir}/split/'+f for f in os.listdir(f'{outdir}/split') if f.endswith('gz')])
+            for i in range(int(cores)): align_trns(i)
         
-        subprocess.call(f'cat {outdir}/split/*_VDJ.fastq.gz > {outdir}/{sample}_VDJ.fastq.gz',shell=True)
-        subprocess.call(f'cat {outdir}/split/*_BCUMI.fasta.gz > {outdir}/{sample}_BCUMI.fasta.gz',shell=True)
-        subprocess.call(f'cat {outdir}/split/*_polyA.fasta.gz > {outdir}/{sample}_polyA.fasta.gz',shell=True)
+            subprocess.call([ f'{pwd}/scripts/align_trns.sh',cores, trns_ref,fqs[i],f'{outdir}/split',f'part_{i+1}'])
+            args = []
+            for i in range(int(cores)): args.append((f'part_{i+1}',f'{outdir}/split'))
+
+            pool = Pool(int(cores))
+            results = pool.starmap(utils.decon_3pXCR_slideseq, args)
+            pool.close()
+
+            subprocess.call(f'cat {outdir}/split/*_VDJ.fastq.gz > {outdir}/{sample}_VDJ.fastq.gz',shell=True)
+            subprocess.call(f'cat {outdir}/split/*_BCUMI.fasta.gz > {outdir}/{sample}_BCUMI.fasta.gz',shell=True)
+            subprocess.call(f'cat {outdir}/split/*_polyA.fasta.gz > {outdir}/{sample}_polyA.fasta.gz',shell=True)
         
         #subprocess.call(f'rm -r {outdir}/split/',shell=True)
 
@@ -314,26 +323,44 @@ if mode == '3pXCR_slideseq':
         utils.decon_3pXCR_slideseq(sample,outdir)
         #subprocess.call(f'rm {outdir}/*.sam',shell=True)
         
-    
     print('\n\n align VDJ with MiXCR and extract clones \n\n')
     
-
-    subprocess.call([ f'{pwd}/scripts/mixcr.sh', f'{outdir}/{sample}', f'{outdir}/{sample}_VDJ.fastq.gz', xpecies, cores ])
+    cloneID_file = f'{outdir}/{sample}_cloneID.txt.gz'
     
-    #print('\n\n align BC-UMI to a reference of barcodes with STAR  \n\n')
+    if os.path.isfile(cloneID_file):
+        print('cloneID file', cloneID_file,' exists, will not align with MiXCR')
+    else:
+        print('cloneID file,', cloneID_file,' does not exist, will align with MiXCR')
+        subprocess.call([ f'{pwd}/scripts/mixcr.sh', f'{outdir}/{sample}', f'{outdir}/{sample}_VDJ.fastq.gz', xpecies, cores ])
+    
+    print('\n\n align BC-UMI to a reference of barcodes with STAR  \n\n')
+    
+    matching_file = f'{outdir}/{sample}_matching.sam'
+    
+    if os.path.isfile(matching_file):
+        print(matching_file,' exists, will not align BC-UMI with STAR')
+    else:
+        print(matching_file,' does not exist, will align BC-UMI with STAR')
+        
+        utils.write_bc_slideseq(sample,outdir,barcodes)
 
-    utils.write_bc_slideseq(sample,outdir,barcodes)
+        subprocess.call([ f'{pwd}/scripts/barcode_ref.sh', f'{outdir}/{sample}_bcreads.fasta', f'{outdir}/{sample}_ref/'])
 
-    subprocess.call([ f'{pwd}/scripts/barcode_ref.sh', f'{outdir}/{sample}_bcreads.fasta', f'{outdir}/{sample}_ref/'])
-
-    subprocess.call([ f'{pwd}/scripts/barcode_align.sh', f'{outdir}/{sample}_BCUMI.fasta.gz', 
-           f'{outdir}/{sample}_ref/', f'{outdir}/{sample}_matching', cores, '-1'])
+        subprocess.call([ f'{pwd}/scripts/barcode_align.sh', f'{outdir}/{sample}_BCUMI.fasta.gz', 
+               f'{outdir}/{sample}_ref/', f'{outdir}/{sample}_matching', cores, '-1'])
 
     print('\n\n generate clone-barcode-UMI table \n\n')
 
-    clones,cloneID=utils.clone_filt_slideseq(sample,outdir)
-
-    utils.process_matching_slideseq_XCR(sample,outdir,cloneID)
+    clones,cloneID = utils.clone_filt_slideseq(sample, outdir)
+    
+    
+    barcode_scores_pdf = f'{outdir}/{sample}_barcode_scores.pdf'
+    if os.path.isfile(barcode_scores_pdf):
+        print(barcode_scores_pdf,' exists, will not extract matching sam')
+    else:
+        print(barcode_scores_pdf,' does not exist, will extract matching sam')
+        
+        utils.process_matching_slideseq_XCR(sample, outdir, cloneID)
     """ """
     
 if mode == '3p10XTCR':
