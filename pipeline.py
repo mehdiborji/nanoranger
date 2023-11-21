@@ -280,18 +280,18 @@ if mode == 'RTX':
 if mode == '3pXCR_slideseq':
     
     if trns_ref is None:
-        #trns_ref = f'{pwd}/data/IG_C_human.fa'
+        
         trns_ref = f'{pwd}/data/XR_C_mouse.fa'
     
-    print('\n\n alignment to C gene with minimap2 \n\n')
+    print('\n\n alignment to C gene with minimap2 and extracting combined VDJ, BC-UMI files \n\n')
     if split:
         
         merged_VDJ = f'{outdir}/{sample}_VDJ.fastq.gz'
         
         if os.path.isfile(merged_VDJ):    
-            print('merged VDJ file,', merged_VDJ,' exists, will not extract or align')
+            print(merged_VDJ,' exists, will not extract or align')
         else:
-            print('merged VDJ file,', merged_VDJ,' does not exist, will extract or align')
+            print(merged_VDJ,' does not exist, will extract or align')
             
             split_fastq = f'{outdir}/split/{sample}.part_001.fastq.gz'
 
@@ -315,9 +315,9 @@ if mode == '3pXCR_slideseq':
             subprocess.call(f'cat {outdir}/split/*_VDJ.fastq.gz > {outdir}/{sample}_VDJ.fastq.gz',shell=True)
             subprocess.call(f'cat {outdir}/split/*_BCUMI.fasta.gz > {outdir}/{sample}_BCUMI.fasta.gz',shell=True)
             subprocess.call(f'cat {outdir}/split/*_polyA.fasta.gz > {outdir}/{sample}_polyA.fasta.gz',shell=True)
-        
+            
         #subprocess.call(f'rm -r {outdir}/split/',shell=True)
-
+        
     else:
         subprocess.call([ f'{pwd}/scripts/align_trns.sh', cores, trns_ref, infile, outdir, sample])
         utils.decon_3pXCR_slideseq(sample,outdir)
@@ -328,9 +328,9 @@ if mode == '3pXCR_slideseq':
     cloneID_file = f'{outdir}/{sample}_cloneID.txt.gz'
     
     if os.path.isfile(cloneID_file):
-        print('cloneID file', cloneID_file,' exists, will not align with MiXCR')
+        print(cloneID_file,' exists, will not align with MiXCR')
     else:
-        print('cloneID file,', cloneID_file,' does not exist, will align with MiXCR')
+        print(cloneID_file,' does not exist, will align with MiXCR')
         subprocess.call([ f'{pwd}/scripts/mixcr.sh', f'{outdir}/{sample}', f'{outdir}/{sample}_VDJ.fastq.gz', xpecies, cores ])
     
     print('\n\n align BC-UMI to a reference of barcodes with STAR  \n\n')
@@ -353,8 +353,8 @@ if mode == '3pXCR_slideseq':
 
     clones,cloneID = utils.clone_filt_slideseq(sample, outdir)
     
-    
     barcode_scores_pdf = f'{outdir}/{sample}_barcode_scores.pdf'
+    
     if os.path.isfile(barcode_scores_pdf):
         print(barcode_scores_pdf,' exists, will not extract matching sam')
     else:

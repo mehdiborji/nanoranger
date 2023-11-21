@@ -9,7 +9,7 @@ import edlib
 import subprocess
 import json
 
-print('poreranger packages loaded')
+print('nanoranger packages loaded')
 
 linker='TCTTCAGCGTTCCCGAGA'
 ad_seq=[('N', 'A'), ('N', 'T'), ('N', 'G'), ('N', 'C')]
@@ -44,8 +44,6 @@ def decon_RTX(sample,outdir):
     end_seqs=[];beg_seqs=[];end_lens=[];beg_lens=[];v_hangs=[];c_hangs=[];v_eds=[];c_eds=[];
     search_V=True;write=False;search_C=True
     
-    #f1= open(f'{fold}/{sample}_{chain}_VDJ_2.fastq', 'w')
-
     file=f'{outdir}/{sample}_trns.sam'
 
     f1= open(f'{outdir}/{sample}_deconcat.fastq', 'w')
