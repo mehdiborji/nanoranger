@@ -28,12 +28,9 @@ sample = args.expname
 barcodes = args.barcodes
 split = args.split
 mode = args.mode
-#human = args.human
 xpecies = args.xpecies
 
 pwd=os.path.dirname(os.path.abspath(__file__))
-
-#print('pwd =',pwd)
 
 if not os.path.exists(outdir): os.makedirs(outdir)
 
@@ -103,8 +100,6 @@ def split_fastq_unzipped(infile,outdir,cores):
                     subprocess.call(command,shell=True)
                     
                     subprocess.call(['seqkit', 'split2' ,f'{outdir}/{infq_name}.fastq', '-p', cores, '-f', '-O', f'{outdir}/split'])
-                
-        
                 
         #command=f'rm {unR1} {unR2}'
         #subprocess.call(command,shell=True)
@@ -293,15 +288,17 @@ if mode == '3pXCR_slideseq':
         else:
             print(merged_VDJ,' does not exist, will extract or align')
             
-            split_fastq = f'{outdir}/split/{sample}.part_001.fastq.gz'
-
-            if os.path.isfile(split_fastq):
-                print(split_fastq,' exists, will not split')
-            else:
-                print(split_fastq,' does not exist, will split')
-                subprocess.call(['seqkit', 'split2' ,infile, '-p', cores, '-f', '-O', f'{outdir}/split'])
-
-            fqs=sorted([f'{outdir}/split/'+f for f in os.listdir(f'{outdir}/split') if f.endswith('gz')])
+            split_fastq_unzipped(infile,outdir,cores)
+            fqs=sorted([f'{outdir}/split/'+f for f in os.listdir(f'{outdir}/split') if f.endswith('fastq')])
+            
+            #split_fastq = f'{outdir}/split/{sample}.part_001.fastq.gz'
+            #if os.path.isfile(split_fastq):
+            #    print(split_fastq,' exists, will not split')
+            #else:
+            #    print(split_fastq,' does not exist, will split')
+            #    subprocess.call(['seqkit', 'split2' ,infile, '-p', cores, '-f', '-O', f'{outdir}/split'])
+            #fqs=sorted([f'{outdir}/split/'+f for f in os.listdir(f'{outdir}/split') if f.endswith('gz')])
+            
             for i in range(int(cores)): align_trns(i)
         
             subprocess.call([ f'{pwd}/scripts/align_trns.sh',cores, trns_ref,fqs[i],f'{outdir}/split',f'part_{i+1}'])
