@@ -1,12 +1,14 @@
 # nanoranger
 
-*nanoranger* is a processing tool for long-read single-cell transcriptomics as described in our [Nature Communications](https://www.nature.com/articles/s41467-023-44137-7) paper and spatial transcriptomics as described in our [Immunity](https://www.cell.com/immunity/pdf/S1074-7613(22)00415-0.pdf) paper. 
+*nanoranger* is a processing tool for long-read single-cell transcriptomics as described in our [Nature Communications](https://www.nature.com/articles/s41467-023-44137-7) paper, and spatial transcriptomics as described in our [Immunity](https://www.cell.com/immunity/pdf/S1074-7613(22)00415-0.pdf) paper.
 
-If you have a question about the software, or have any suggestions or ideas for new features or collaborations feel free to create an issue here, on GitHub, or write an email to mborji@broadinstitute.org .
+## Workflow
+
+The input data can be obtained through sequencing of 10x Genomics whole-transcriptome cDNA libraries or amplicons obtained through targeted amplification, sequenced with Oxford Nanopore Technologies (ONT) or Pacific Biosciences devices.The schematic of our workflow is demonstrated below.
 
 ![schema](nanoranger_schema.png)
 
-The input data can be obtained through sequencing of 10x Genomics whole-transcriptome cDNA libraries or amplicons obtained through targeted amplification, sequenced with Oxford Nanopore Technologies (ONT) or Pacific Biosciences devices. It is inspired by *cellranger*. 
+If you have a question about the software, or have any suggestions or ideas for new features or collaborations, feel free to create an issue here on GitHub, or write an email to mborji@broadinstitute.org.
 
 ## Background
 
@@ -24,6 +26,23 @@ There are different quantification 'modes' available for different libraries str
 nanoranger has been primarily tested on targeted libraries generated using 10X 5' Chromium and slide-seq 3' platforms. It can be used for immune profiling and genotyping from other library types with minimal modifications. 
 
 Further developments for generating count matrices for whole transcriptome libraries as well as addition of other chemistry types are currently underway.
+
+## Software Dependencies 
+This tool has been tested on Python 3.7.10 under Centos and Ubuntu systems.
+
+The following programs are also assumed to be in path when running the tool. Please refer to the provided link for each to install them prior to start of your data analysis using this tool. Alternatively they are available as bioconda packages.
+
+[STAR](https://github.com/alexdobin/STAR) is used for barcode correction against a set of known barcodes. By certain input parameter changes we use STAR in a Smith-Waterman-like mode.
+
+[minimap2](https://github.com/lh3/minimap2) is used for initial alignment of raw nanopore reads to a transcriptome and (subsequently based on operation mode) alignment to a genome. 
+
+[SAMtools](http://www.htslib.org/download/) is used for sorting and indexing BAM files
+
+[pigz](https://zlib.net/pigz/) is used for compressing output and intermediate fasta and fastq files.
+
+[MiXCR](https://github.com/milaboratory/mixcr) is used for VDJ alignment and clonotype extraction. We have strictly used MiXCR v3 in validating and benchmarking the results against Illumina-based data. Latest versions of MiXCR are not fully tested with our workflow and seem not be compatible out of the box without tunning parameters.
+
+[SeqKit](https://bioinf.shenwei.me/seqkit/) is used for splitting input fastq files in case of very large libraries or libraries prepared with cDNA concatenation. Deconcatenation speed-up is achieved by parallel processing of splitted input files. To enable this step set the optional boolean flag --split.
 
 
 ## Download and Install
@@ -144,20 +163,4 @@ Coming Soon!
 
 - Scripts for downstream analysis on the outputs of this pipeline is available through https://github.com/liviuspenter/nanoranger.R
 
-## Software Dependencies 
-This tool has been tested on Python 3.7.10 under Centos and Ubuntu systems.
-
-The following programs are also assumed to be in path when running the tool. Please refer to the provided link for each to install them prior to start of your data analysis using this tool. Alternatively they are available as bioconda packages.
-
-[STAR](https://github.com/alexdobin/STAR) is used for barcode correction against a set of known barcodes. By certain input parameter changes we use STAR in a Smith-Waterman-like mode.
-
-[minimap2](https://github.com/lh3/minimap2) is used for initial alignment of raw nanopore reads to a transcriptome and (subsequently based on operation mode) alignment to a genome. 
-
-[SAMtools](http://www.htslib.org/download/) is used for sorting and indexing BAM files
-
-[pigz](https://zlib.net/pigz/) is used for compressing output and intermediate fasta and fastq files.
-
-[MiXCR](https://github.com/milaboratory/mixcr) is used for VDJ alignment and clonotype extraction.
-
-[SeqKit](https://bioinf.shenwei.me/seqkit/) is used for splitting input fastq files in case of very large libraries or libraries prepared with cDNA concatenation. Deconcatenation speed-up is achieved by parallel processing of splitted input files. To enable this step set the optional boolean flag --split.
 
