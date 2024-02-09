@@ -408,7 +408,6 @@ def decon_3pXCR_slideseq(sample,outdir):
     subprocess.call([ 'pigz', '-f', f'{outdir}/{sample}_polyA.fasta' ])
     subprocess.call([ 'pigz', '-f', f'{outdir}/{sample}_eds_names.csv' ])
     
-    
 def clone_filt_slideseq(sample,outdir):
     
     # for slideseq

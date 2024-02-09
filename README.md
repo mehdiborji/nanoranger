@@ -1,6 +1,8 @@
 # nanoranger
 
-*nanoranger* is a processing tool for long-read single-cell and spatial transcriptomics data as described in our [Nature Communications](https://www.nature.com/articles/s41467-023-44137-7) paper. 
+*nanoranger* is a processing tool for long-read single-cell transcriptomics as described in our [Nature Communications](https://www.nature.com/articles/s41467-023-44137-7) paper and spatial transcriptomics as described in our [Immunity](https://www.cell.com/immunity/pdf/S1074-7613(22)00415-0.pdf) paper. 
+
+If you have a question about the software, or have any suggestions or ideas for new features or collaborations feel free to create an issue here, on GitHub, or write an email to mborji@broadinstitute.org .
 
 ![schema](nanoranger_schema.png)
 
