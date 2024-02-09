@@ -4,7 +4,7 @@
 
 ## Workflow
 
-The input data can be obtained through sequencing of 10x Genomics whole-transcriptome cDNA libraries or amplicons obtained through targeted amplification, sequenced with Oxford Nanopore Technologies (ONT) or Pacific Biosciences devices.The schematic of our workflow is demonstrated below.
+The input data can be obtained through sequencing of 10x Genomics whole-transcriptome cDNA libraries or amplicons obtained through targeted amplification, with Oxford Nanopore Technologies (ONT) or Pacific Biosciences devices. The schematic of our workflow is demonstrated below.
 
 ![schema](nanoranger_schema.png)
 
