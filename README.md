@@ -115,13 +115,12 @@ python ~/nanoranger/pipeline.py \
         --g ~/nanoranger/data/RUNX1_RUNX1T1_ABL1_BCR.fa
 ```
 
-Downstream of this process we may like to extract the transcript-BC-UMIs associated with each read and filter the meaninful fusions after removal of potential chimeras and events with few supporting reads. This can be acchomplished by running the following script on the final BAM file:
+Downstream of this process, we may like to extract the transcript-BC-UMIs associated with each read and extract the meaningful fusions after removal of potential chimeras and events with few supporting reads. This can be accomplished by running the following script on the final BAM file:
 
 ```
 python ~/nanoranger/scripts/downstream/fusion_gene.py --b fusion_genome_tagged.bam --o fusion_reads.csv
 ```
 For RUNX1_RUNX1T1 fusion we use a primer for RUNX1T1 transcript close to the fusion site. Reads with a flanking barcode which align to RUNX1 will be fusion reads. Such reads will have another (supplementary or even primary) alignment to RUNX1T1, however the flanking region of such alignments will not contain any barcodes and will be automatically dropped in the processing.  Reads with flanking barcode which align to RUNX1T1 will be wild-type reads.
-
 
 - Analysis of **MT transcripts in 15-mer MAS-seq arrays** from a **10x genomics Chromium 5'** library (we may skip whole genome alignment by realigning the extracted transcripts just to the mitochondrial chromosome)
 ```
