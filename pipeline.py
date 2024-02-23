@@ -159,7 +159,7 @@ if mode == '5p10XGEX':
 
     subprocess.call(f'samtools index -@{cores} {outdir}/{sample}_genome_tagged.bam',shell=True)
     subprocess.call(f'rm -r {outdir}/{sample}_ref',shell=True)
-    subprocess.call(f'rm -r {outdir}/{sample}_matching_*',shell=True)
+    subprocess.call(f'rm -r {outdir}/{sample}_matching*',shell=True)
     subprocess.call(f'rm -r {outdir}/{sample}_bcreads*',shell=True)
     subprocess.call(f'rm -r {outdir}/{sample}_genome.*',shell=True)
     

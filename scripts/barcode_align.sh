@@ -34,14 +34,8 @@ STAR \
 --readNameSeparator space \
 --readFilesCommand zcat
 
-
 #--outSAMtype BAM Unsorted \
-
 #module load gcc/9.2.0
 #module load samtools/1.14
 
 mv "$out_name"Aligned.out.sam "$out_name".sam
-#samtools sort -@$4 -o "$out_name".bam "$out_name"Aligned.out.bam
-#samtools index -@$4 "$out_name".bam
-
-rm "$out_name"*out*
