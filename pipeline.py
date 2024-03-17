@@ -101,8 +101,6 @@ def split_fastq_unzipped(infile,outdir,cores):
                     
                     subprocess.call(['seqkit', 'split2' ,f'{outdir}/{infq_name}.fastq', '-p', cores, '-f', '-O', f'{outdir}/split'])
                 
-        #command=f'rm {unR1} {unR2}'
-        #subprocess.call(command,shell=True)
 
 if mode == '5p10XGEX':
     if trns_ref is None:
@@ -289,7 +287,7 @@ if mode == '3pXCR_slideseq':
             print(merged_VDJ,' does not exist, will extract or align')
             
             split_fastq_unzipped(infile,outdir,cores)
-            fqs=sorted([f'{outdir}/split/'+f for f in os.listdir(f'{outdir}/split') if f.endswith('fastq')])
+            fqs = sorted([f'{outdir}/split/'+f for f in os.listdir(f'{outdir}/split') if f.endswith('fastq')])
             
             #split_fastq = f'{outdir}/split/{sample}.part_001.fastq.gz'
             #if os.path.isfile(split_fastq):
@@ -313,7 +311,7 @@ if mode == '3pXCR_slideseq':
             subprocess.call(f'cat {outdir}/split/*_BCUMI.fasta.gz > {outdir}/{sample}_BCUMI.fasta.gz',shell=True)
             subprocess.call(f'cat {outdir}/split/*_polyA.fasta.gz > {outdir}/{sample}_polyA.fasta.gz',shell=True)
             
-        #subprocess.call(f'rm -r {outdir}/split/',shell=True)
+            subprocess.call(f'rm -r {outdir}/split/',shell=True)
         
     else:
         subprocess.call([ f'{pwd}/scripts/align_trns.sh', cores, trns_ref, infile, outdir, sample])
@@ -385,13 +383,12 @@ if mode == '3p10XTCR':
 
         subprocess.call(f'cat {outdir}/split/*_decon*.gz > {outdir}/{sample}_deconcat.fastq.gz',shell=True)
         
-        #subprocess.call(f'rm -r {outdir}/split/',shell=True)
+        subprocess.call(f'rm -r {outdir}/split/',shell=True)
 
     else:
         #subprocess.call([ f'{pwd}/scripts/align_trns.sh', cores, trns_ref, infile, outdir, sample])
         utils.decon_3p10XTCR(sample,outdir)
         #subprocess.call(f'rm {outdir}/*.sam',shell=True)
-        
     
     print('\n\n align VDJ with MiXCR and extract clones \n\n')
 

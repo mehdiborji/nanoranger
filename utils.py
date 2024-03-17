@@ -486,10 +486,10 @@ def write_bc_slideseq(sample,outdir,bc_file):
     barcodes = pd.read_table(bc_file, names=['bc'])
     
     if 'BeadBarcodes' in bc_file:
-        bcs=barcodes.bc.apply(lambda x: ''.join(x.split(','))).to_list()
+        bcs = np.unique(barcodes.bc.apply(lambda x: ''.join(x.split(','))).to_list())
         
     if 'matched' in bc_file:
-        bcs=barcodes.bc.apply(lambda x: x.split('-')[0]).to_list()
+        bcs = np.unique(barcodes.bc.apply(lambda x: x.split('-')[0]).to_list())
         
     bc32base=['N'*left+b[:8]+linker+b[8:]+'N'*right for b in bcs]
 
