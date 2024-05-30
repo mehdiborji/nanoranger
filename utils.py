@@ -42,27 +42,7 @@ def sort_cnt(arr):
 
 
 def decon_RTX(sample, outdir):
-    tot = 0
-    readIDs = []
-    all_AS = []
-    bcs = []
-    subs = []
-    reads = []
-    trns = []
-    cigs = []
-    read_seq = {}
     rclipV = 100
-    end_seqs = []
-    beg_seqs = []
-    end_lens = []
-    beg_lens = []
-    v_hangs = []
-    c_hangs = []
-    v_eds = []
-    c_eds = []
-    search_V = True
-    write = False
-    search_C = True
 
     file = f"{outdir}/{sample}_trns.sam"
 
@@ -71,15 +51,13 @@ def decon_RTX(sample, outdir):
     samfile = pysam.AlignmentFile(f"{file}", "r")
 
     for read in samfile.fetch():
-        AS = read.get_tag("AS")
-        qlen = read.qlen
+        read.get_tag("AS")
         rlen = read.rlen
         seq = read.seq
         flag = read.flag
         qstrt = read.query_alignment_start
         qend = read.query_alignment_end
         # rname=read.qname;trans=read.reference_name.split('|')[4] #for mouse (unedited)
-        rname = read.qname
         trans = read.reference_name.split("|")[0]  # for human (edited)
 
         if flag == 16 or flag == 2064:
@@ -89,9 +67,6 @@ def decon_RTX(sample, outdir):
             qstrt_mod = qstrt
             qend_mod = qend
 
-        ref_s = read.reference_start
-        ref_e = read.reference_end
-        ref_len = read.reference_length
 
         if rlen - qend > rclipV:
             sub_end = qend + rclipV
@@ -122,8 +97,6 @@ def decon_RTX(sample, outdir):
 
 def decon_5p10XGEX(sample, outdir):
     tot = 0
-    bcs = []
-    umis = []
     reads = []
     trns = []
     eds = []
@@ -140,7 +113,7 @@ def decon_5p10XGEX(sample, outdir):
     samfile = pysam.AlignmentFile(f"{file}", "r")
 
     for read in samfile.fetch():
-        AS = read.get_tag("AS")
+        read.get_tag("AS")
         qlen = read.qlen
         rlen = read.rlen
         seq = read.seq
@@ -152,7 +125,7 @@ def decon_5p10XGEX(sample, outdir):
         ref_len = read.reference_length
         ref_s = read.reference_start
         ref_e = read.reference_end
-        span = ref_e - ref_s
+        ref_e - ref_s
 
         if qstrt > lclip:
             beg_qu = seq[qstrt - lclip : qstrt + rclip]
@@ -206,16 +179,14 @@ def decon_5p10XGEX(sample, outdir):
 
 def decon_5p10XTCR(sample, outdir):
     tot = 0
-    bcs = []
-    umis = []
-    reads = []
-    trns = []
     eds = []
     lclip = 200
     rclip = 20
-    # lclipV=150; # lclip large to account for missing 5' UTR in reference transcripts, must generate custom transcripts and report these unannotated regions
+    # lclipV = 150; # lclip large to account for missing 5' UTR in reference transcripts,
+    # must generate custom transcripts and report these unannotated regions
 
-    # rclipV=100; # clip into direction of C gene, this will be covering CDR3 junction and J gene region and additionally parts of C gene, optimize to clip on adapaterss
+    # rclipV = 100; # clip into direction of C gene, this will be covering CDR3 junction 
+    # and J gene region and additionally parts of C gene, optimize to clip on adapaterss
 
     lclipV = 40
     rclipV = 80
@@ -229,19 +200,17 @@ def decon_5p10XTCR(sample, outdir):
     samfile = pysam.AlignmentFile(f"{file}", "r")
 
     for read in samfile.fetch():
-        AS = read.get_tag("AS")
+        read.get_tag("AS")
         qlen = read.qlen
         rlen = read.rlen
         seq = read.seq
         qstrt = read.query_alignment_start
         qend = read.query_alignment_end
-        rname = read.qname
         trans = read.reference_name
         flag = read.flag
-        ref_len = read.reference_length
         ref_s = read.reference_start
         ref_e = read.reference_end
-        span = ref_e - ref_s
+        ref_e - ref_s
 
         if qstrt > lclip:
             beg_qu = seq[qstrt - lclip : qstrt + rclip]
@@ -346,7 +315,7 @@ def decon_3p10XTCR(sample, outdir):
         trans = read.reference_name.split("-")[0]
         ref_s = read.reference_start
         ref_e = read.reference_end
-        span = ref_e - ref_s
+        ref_e - ref_s
 
         rclip = 100
 
@@ -392,25 +361,8 @@ def decon_3p10XTCR(sample, outdir):
 
 def decon_3pXCR_slideseq(sample, outdir):
     tot = 0
-    readIDs = []
-    all_AS = []
-    bcs = []
-    umis = []
-    reads = []
-    trns = []
-    cigs = []
-    read_seq = {}
-    end_seqs = []
-    beg_seqs = []
-    end_lens = []
-    beg_lens = []
-    v_hangs = []
     c_hangs = []
-    v_eds = []
     c_eds = []
-    search_V = True
-    write = False
-    search_C = True
     polyAs = []
     newnames = []
     file = f"{outdir}/{sample}_trns.sam"
@@ -431,14 +383,12 @@ def decon_3pXCR_slideseq(sample, outdir):
     print(f"{outdir}/{sample}_VDJ.fastq")
     for read in samfile.fetch():
         accept = False
-        AS = read.get_tag("AS")
-        qlen = read.qlen
+        read.get_tag("AS")
         rlen = read.rlen
         seq = read.seq
         flag = read.flag
         qstrt = read.query_alignment_start
         qend = read.query_alignment_end
-        rname = read.qname
         trans = read.reference_name
 
         ref_s = read.reference_start
@@ -648,7 +598,7 @@ def write_bc_5p10X(sample, outdir, bc_file):
     left = 30
     right = 40
     bc_pad = ["N" * left + b + "N" * right for b in bcs]
-    # with open(f'./outputs/737k_pad_{left}_{}.fasta', 'w') as f:
+
     with open(f"{outdir}/{sample}_bcreads.fasta", "w") as f:
         for i, b in enumerate(bc_pad):
             f.write(f">{bcs[i]}\n")
@@ -661,7 +611,6 @@ def process_matching_slideseq_XCR(sample, outdir, cloneID):
     all_AS = []
     bcs = []
     umis = []
-    reads = []
     bad_bc = []
     samfile = pysam.AlignmentFile(f"{outdir}/{sample}_matching.sam", "r", threads=8)
     print("matching bam processing")
@@ -692,7 +641,7 @@ def process_matching_slideseq_XCR(sample, outdir, cloneID):
         if tot % 50000 == 0:
             print(tot, " records processed")
     print("number of short UMI reads = ", len(bad_bc))
-    all_bcs = set(bcs)
+    set(bcs)
 
     all_AS = np.array(all_AS)
     scores = sort_cnt(all_AS[all_AS[:, 1] == 0][:, 0])
@@ -720,9 +669,7 @@ def process_matching_5p10X(sample, outdir):
     tot = 0
     all_AS = []
     reads = []
-    bad_umi = []
     bad_bc = []
-    rstart = []
     read_bcumi_dic = {}
     bcumi_dic = {}
 
@@ -774,7 +721,6 @@ def process_matching_5p10X(sample, outdir):
     read_keys = list(read_bcumi_dic.keys())
     bcumi_dic = {}
     read_bc_umi_trns_dic = {}
-    noneq = []
     for i, read in enumerate(read_keys):
         bcumi = read_bcumi_dic[read]
         # rname=read.split('_')[0]
@@ -842,7 +788,6 @@ def process_matching_5p10X(sample, outdir):
     tagged_bam = pysam.AlignmentFile(sam_tag, "wb", template=samfile, threads=8)
 
     i = 0
-    names = []
     all_trns = []
     for read in samfile.fetch():
         name = read.qname  # .split('_')[0]
@@ -869,9 +814,7 @@ def process_matching_5p10XTCR(sample, outdir):
     tot = 0
     all_AS = []
     reads = []
-    bad_umi = []
     bad_bc = []
-    rstart = []
     read_bcumi_dic = {}
     bcumi_dic = {}
     readIDs = []
@@ -926,7 +869,6 @@ def process_matching_5p10XTCR(sample, outdir):
     read_keys = list(read_bcumi_dic.keys())
     bcumi_dic = {}
     read_bc_umi_trns_dic = {}
-    noneq = []
     for i, read in enumerate(read_keys):
         bcumi = read_bcumi_dic[read]
         # rname=read.split('_')[0]
@@ -1019,7 +961,6 @@ def process_matching_5p10XTCR(sample, outdir):
 
 def decon_3p10XTCR_nuc(sample, outdir):
     tot = 0
-    eds = []
     short_bc = 0
     file = f"{outdir}/{sample}_trns.sam"
 
@@ -1031,22 +972,20 @@ def decon_3p10XTCR_nuc(sample, outdir):
 
     r_search = 2000  # search length into 3' direction of 3' softclip of V gene (to search for BC-UMI)
 
-    lclip = 40
     f1 = open(f"{outdir}/{sample}_VDJ.fastq", "w")
     f2 = open(f"{outdir}/{sample}_BCUMI.fasta", "w")
     print(f"{outdir}/{sample}_VDJ.fastq")
     for read in samfile.fetch():
-        qlen = read.qlen
         rlen = read.rlen
         seq = read.seq
         flag = read.flag
         qstrt = read.query_alignment_start
         qend = read.query_alignment_end
-        rname = read.qname[-10:]
+        read.qname[-10:]
         trans = read.reference_name.split("-")[0]
         ref_s = read.reference_start
         ref_e = read.reference_end
-        span = ref_e - ref_s
+        ref_e - ref_s
 
         rclip = 100  # PART INTO 3' OF V GENE (SHOULD INCLUDE CDR3 AND PARTIAL C GENE or C-J INTRON)
 
@@ -1100,10 +1039,10 @@ def decon_3p10XTCR_nuc(sample, outdir):
                     end = ed["locations"][0][1] + 200 * i
 
                     if start - rclip_truseq < 0:
-                        upstart = 0
+                        pass
                     else:
-                        upstart = start - rclip_truseq
-                    upend = end + lclip_truseq
+                        start - rclip_truseq
+                    end + lclip_truseq
                     # bcumi=rev(end_qu[upstart:upend])
 
                     bcumi = rev(end_qu[start - 35 : end - 12])
@@ -1177,9 +1116,7 @@ def process_matching_3p10XTCR_nuc(sample, outdir):
     tot = 0
     all_AS = []
     reads = []
-    bad_umi = []
     bad_bc = []
-    rstart = []
     read_bcumi_dic = {}
     bcumi_dic = {}
     readIDs = []
@@ -1234,7 +1171,6 @@ def process_matching_3p10XTCR_nuc(sample, outdir):
     read_keys = list(read_bcumi_dic.keys())
     bcumi_dic = {}
     read_bc_umi_trns_dic = {}
-    noneq = []
     for i, read in enumerate(read_keys):
         bcumi = read_bcumi_dic[read]
         # rname=read.split('_')[0]
@@ -1326,7 +1262,6 @@ def process_matching_3p10XTCR_nuc(sample, outdir):
 
 def decon_3p10XGEX(sample, outdir):
     tot = 0
-    eds = []
     short_BC = 0
     file = f"{outdir}/{sample}_trns.sam"
     samfile = pysam.AlignmentFile(f"{file}", "r")
@@ -1351,7 +1286,6 @@ def decon_3p10XGEX(sample, outdir):
     f2 = open(f"{outdir}/{sample}_BCUMI.fasta", "w")
 
     for read in samfile.fetch():
-        qlen = read.qlen
         rlen = read.rlen
         seq = read.seq
         flag = read.flag
@@ -1360,7 +1294,7 @@ def decon_3p10XGEX(sample, outdir):
         trans = read.reference_name  # .split('-')[0]
         ref_s = read.reference_start
         ref_e = read.reference_end
-        span = ref_e - ref_s
+        ref_e - ref_s
 
         # PART TO 3' OF V GENE (SHOULD INCLUDE CDR3 AND PARTIAL C GENE)
 
@@ -1370,9 +1304,9 @@ def decon_3p10XGEX(sample, outdir):
             end_qu = seq[qend - 70 :]
 
         if qstrt < l_search:
-            beg_qu = seq[:qstrt]
+            seq[:qstrt]
         else:
-            beg_qu = seq[qstrt - l_search : qstrt]
+            seq[qstrt - l_search : qstrt]
 
         if rlen - qend > rclip:
             sub_end = qend + rclip
@@ -1387,8 +1321,6 @@ def decon_3p10XGEX(sample, outdir):
         sub_seq = seq[sub_strt:sub_end]  # subset only the selected parts to save
         sub_qual = read.qual[sub_strt:sub_end]
 
-        rclip_truseq = 40
-        lclip_truseq = 10
 
         if flag == 16 or flag == 2064:
             qstrt_mod = rlen - qend
@@ -1418,7 +1350,7 @@ def decon_3p10XGEX(sample, outdir):
                 if ed["editDistance"] > -1 and ed["editDistance"] < 4:
                     # print(ed)
                     start = ed["locations"][0][0] + 200 * i
-                    end = ed["locations"][0][1] + 200 * i
+                    ed["locations"][0][1] + 200 * i
 
                     bcumi = rev(end_qu[start - 16 - 12 - 4 : start + 3])
 
@@ -1510,13 +1442,7 @@ def write_bc_3p10XGEX(sample, outdir, barcodes):
 def process_matching_3p10XGEX(sample, outdir):
     tot = 0
     all_AS = []
-    reads = []
-    bad_umi = []
     bad_bc = []
-    rstart = []
-    read_bcumi_dic = {}
-    bcumi_dic = {}
-    readIDs = []
 
     samfile = pysam.AlignmentFile(f"{outdir}/{sample}_matching.sam", "r")
 
@@ -1576,21 +1502,23 @@ def process_matching_3p10XGEX(sample, outdir):
 
 
 def make_count_mtx_3p10XGEX(sample, outdir):
-    adata_file = f"{outdir}/{sample}_counts_adata.h5ad"
+    
+    mtx_file = f"{outdir}/{sample}_gex.mtx.gz"
 
-    if os.path.isfile(adata_file):
-        print(adata_file, " exists, skip")
+    if os.path.isfile(mtx_file):
+        print(mtx_file, " exists, skip")
         return
 
     jsons = sorted(
         [f for f in os.listdir(f"{outdir}/split/") if f.endswith("quads.json")]
     )
 
-    # jsons = jsons[:subset]
-    # print(len(jsons))
-
     data_agg = {}
 
+    """
+    will implement parallel version
+    """
+    
     for i in tqdm(range(len(jsons))):
         with open(f"{dir_split}{jsons[i]}", "r") as json_file:
             data_sub = json.load(json_file)
@@ -1600,42 +1528,3 @@ def make_count_mtx_3p10XGEX(sample, outdir):
                     data_agg[k].extend(data_sub[k])
                 else:
                     data_agg[k] = data_sub[k]
-
-    counts_np = np.zeros((len(a_white), len(t_white)))
-    counts_df = pd.DataFrame(counts_np, index=a_white.index, columns=t_white.index)
-
-    all_list = []
-    for a_bc in tqdm(a_white.index):
-        if a_bc not in data_agg:
-            print(f"{a_bc} not in data_agg")
-            continue
-
-        umi_tbc = data_agg[a_bc]
-        umi_bc_dic = {}
-        for a in umi_tbc:
-            if umi_bc_dic.get(a[0]) is not None:
-                umi_bc_dic[a[0]].append(a[1])
-            else:
-                umi_bc_dic[a[0]] = [a[1]]
-
-        t_bc_cnt = {}
-        for k in umi_bc_dic:
-            umi_reads = len(umi_bc_dic[k])
-            if umi_reads > threshold:
-                uni_t_bc = set(umi_bc_dic[k])
-                if len(uni_t_bc) > 1:
-                    bcs, cnts = np.unique(umi_bc_dic[k], return_counts=True)
-                    if (
-                        np.max(cnts / umi_reads) > 0.74
-                    ):  # the concordance to accept the UMI 2/2, 3/3, 3/4, 4/5 or better
-                        t_bc = bcs[np.argmax(cnts / umi_reads)]
-                        seq_counter(t_bc_cnt, t_bc)
-                else:
-                    t_bc = list(uni_t_bc)[0]
-                    seq_counter(t_bc_cnt, t_bc)
-
-        counts_df.loc[a_bc, list(t_bc_cnt.keys())] = list(t_bc_cnt.values())
-
-    counts_df = AnnData(counts_df, dtype="float32")
-    counts_df.X = csr_matrix(counts_df.X)
-    counts_df.write_h5ad(adata_file, compression="gzip")
