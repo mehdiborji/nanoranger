@@ -738,7 +738,8 @@ if mode == "3p10XTCR_nuc":
     utils.process_matching_3p10XTCR_nuc(sample, outdir)
     """"""
 
-if mode == "3p10XGEX_PacBio":
+if mode == "3p10XGEX":
+    
     if trns_ref is None:
         trns_ref = f"{pwd}/data/panel_MT_trns.fa"
 
