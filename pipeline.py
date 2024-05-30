@@ -3,7 +3,6 @@ import argparse
 import utils
 import os
 from multiprocessing import Pool
-import scanpy as sc
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--cores", type=str)
@@ -16,7 +15,6 @@ parser.add_argument("--barcodes", type=str)
 parser.add_argument("--split", default=False, action="store_true")
 parser.add_argument("--mode", type=str)
 parser.add_argument("--xpecies", type=str)
-# parser.add_argument('--human', default=False, action='store_true')
 
 args = parser.parse_args()
 cores = args.cores
@@ -77,17 +75,13 @@ def align_bcs(i):
 
 def split_fastq(infile, outdir, cores):
     inputfq_name = infile.split("/")[-1]
-
     inputfq_name = inputfq_name.split(".fastq")[0]
-
     splitted_file = f"{outdir}/split/{inputfq_name}.part_001.fastq.gz"
 
     if os.path.isfile(splitted_file):
-        print(
-            "splitted input fastq exists, will not perform splitting assuming completion of splitting"
-        )
+        print("splitted input fastqs seem to exist, will not do splitting")
     else:
-        print("splitted input fastq does not exist, will perform splitting")
+        print("splitted input fastqs do not seem to exist, will do splitting")
         subprocess.call(
             ["seqkit", "split2", infile, "-p", cores, "-f", "-O", f"{outdir}/split"]
         )
@@ -270,7 +264,7 @@ if mode == "5p10XTCR":
     print("\n\n alignment to transcriptome reference and defusing/deconcatenation \n\n")
 
     if split:
-        inputfq_name = inputfq.split("/")[-1]
+        inputfq_name = infile.split("/")[-1]
 
         inputfq_name = inputfq_name.split(".fastq")[0]
 
@@ -739,7 +733,6 @@ if mode == "3p10XTCR_nuc":
     """"""
 
 if mode == "3p10XGEX":
-    
     if trns_ref is None:
         trns_ref = f"{pwd}/data/panel_MT_trns.fa"
 
@@ -747,7 +740,6 @@ if mode == "3p10XGEX":
 
     if split:
         split_fastq_unzipped(infile, outdir, cores)
-        # subprocess.call(['seqkit', 'split2' ,infile, '-p', cores, '-f', '-O', f'{outdir}/split'])
         fqs = sorted(
             [
                 f"{outdir}/split/" + f
