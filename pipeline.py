@@ -262,7 +262,7 @@ if mode == "5p10XTCR":
         xpecies = "hsa"
     """"""
     print("\n\n alignment to transcriptome reference and defusing/deconcatenation \n\n")
-
+    """
     if split:
         inputfq_name = infile.split("/")[-1]
 
@@ -324,19 +324,25 @@ if mode == "5p10XTCR":
         )
         utils.decon_5p10XTCR(sample, outdir)
         # subprocess.call(f'rm {outdir}/*.sam',shell=True)
+    
+    print("\n\n align VDJ with MiXCR and extract clones \n\n")
 
-    subprocess.call(
-        [
-            f"{pwd}/scripts/mixcr.sh",
-            f"{outdir}/{sample}",
-            f"{outdir}/{sample}_deconcat.fastq.gz",
-            xpecies,
-            cores,
-        ]
-    )
+    cloneID_file = f"{outdir}/{sample}_cloneID.txt.gz"
 
-    # subprocess.call([ f'{pwd}/scripts/mixcr_asmbl.sh', f'{outdir}/{sample}', f'{outdir}/{sample}_deconcat.fastq.gz',xpecies, cores ])
-
+    if os.path.isfile(cloneID_file):
+        print(cloneID_file, " exists, will not align with MiXCR")
+    else:
+        print(cloneID_file, " does not exist, will align with MiXCR")
+        subprocess.call(
+            [
+                f"{pwd}/scripts/mixcr.sh",
+                f"{outdir}/{sample}",
+                f"{outdir}/{sample}_deconcat.fastq.gz",
+                xpecies,
+                cores,
+            ]
+        )
+        
     if barcodes is None:
         barcodes = f"{pwd}/data/737K-august-2016.txt.gz"
 
@@ -360,7 +366,7 @@ if mode == "5p10XTCR":
             "-1",
         ]
     )
-
+    """
     print("\n\n generate clone-barcode-UMI table \n\n")
 
     utils.clone_filt_5p10X(sample, outdir)
