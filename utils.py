@@ -67,7 +67,6 @@ def decon_RTX(sample, outdir):
             qstrt_mod = qstrt
             qend_mod = qend
 
-
         if rlen - qend > rclipV:
             sub_end = qend + rclipV
         else:
@@ -180,16 +179,23 @@ def decon_5p10XGEX(sample, outdir):
 def decon_5p10XTCR(sample, outdir):
     tot = 0
     eds = []
-    lclip = 200
-    rclip = 20
-    # lclipV = 150; # lclip large to account for missing 5' UTR in reference transcripts,
+    lclip = 200  # lclip large to account for missing 5' UTR in reference transcripts,
+    rclip = 20  # rclip to account for accidental alignment of BC-UMI-TSO to transcripts (rare)
+
+    # lclipV = 150;
     # must generate custom transcripts and report these unannotated regions
 
-    # rclipV = 100; # clip into direction of C gene, this will be covering CDR3 junction 
-    # and J gene region and additionally parts of C gene, optimize to clip on adapaterss
+    # rclipV = 100;
+
+    # lclipV: clip into 5' direction of of V gene, this can be technically 0
 
     lclipV = 40
+
+    # rclipV: clip into direction of C gene, this will be covering CDR3 junction
+    # and J gene region and additionally parts of C gene, optimize to clip on adapaterss
+
     rclipV = 80
+
     const = "CGCTCTTCCGATCT" + 26 * "N" + "TTTCTTATATG"
 
     file = f"{outdir}/{sample}_trns.sam"
@@ -284,8 +290,8 @@ def decon_5p10XTCR(sample, outdir):
 
     f1.close()
     f2.close()
-    # eds=pd.DataFrame(np.array(eds))
-    # eds.to_csv(f'{outdir}/{sample}_eds.csv')
+    eds = pd.DataFrame(np.array(eds))
+    eds.to_csv(f"{outdir}/{sample}_eds.csv")
     subprocess.call(["pigz", "-f", f"{outdir}/{sample}_deconcat.fastq"])
     subprocess.call(["pigz", "-f", f"{outdir}/{sample}_BCUMI.fasta"])
 
@@ -1321,7 +1327,6 @@ def decon_3p10XGEX(sample, outdir):
         sub_seq = seq[sub_strt:sub_end]  # subset only the selected parts to save
         sub_qual = read.qual[sub_strt:sub_end]
 
-
         if flag == 16 or flag == 2064:
             qstrt_mod = rlen - qend
             qend_mod = rlen - qstrt
@@ -1502,7 +1507,6 @@ def process_matching_3p10XGEX(sample, outdir):
 
 
 def make_count_mtx_3p10XGEX(sample, outdir):
-    
     mtx_file = f"{outdir}/{sample}_gex.mtx.gz"
 
     if os.path.isfile(mtx_file):
@@ -1518,7 +1522,7 @@ def make_count_mtx_3p10XGEX(sample, outdir):
     """
     will implement parallel version
     """
-    
+
     for i in tqdm(range(len(jsons))):
         with open(f"{dir_split}{jsons[i]}", "r") as json_file:
             data_sub = json.load(json_file)
