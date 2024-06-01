@@ -260,9 +260,9 @@ if mode == "5p10XTCR":
         trns_ref = f"{pwd}/data/TR_V_human.fa"
     if xpecies is None:
         xpecies = "hsa"
-    """"""
+
     print("\n\n alignment to transcriptome reference and defusing/deconcatenation \n\n")
-    """
+
     if split:
         inputfq_name = infile.split("/")[-1]
 
@@ -324,7 +324,7 @@ if mode == "5p10XTCR":
         )
         utils.decon_5p10XTCR(sample, outdir)
         # subprocess.call(f'rm {outdir}/*.sam',shell=True)
-    
+
     print("\n\n align VDJ with MiXCR and extract clones \n\n")
 
     cloneID_file = f"{outdir}/{sample}_cloneID.txt.gz"
@@ -342,7 +342,7 @@ if mode == "5p10XTCR":
                 cores,
             ]
         )
-        
+
     if barcodes is None:
         barcodes = f"{pwd}/data/737K-august-2016.txt.gz"
 
@@ -366,11 +366,10 @@ if mode == "5p10XTCR":
             "-1",
         ]
     )
-    """
+
     print("\n\n generate clone-barcode-UMI table \n\n")
 
     utils.clone_filt_5p10X(sample, outdir)
-
     utils.process_matching_5p10XTCR(sample, outdir)
     """"""
 
