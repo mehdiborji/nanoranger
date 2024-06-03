@@ -4,8 +4,9 @@ from datetime import datetime
 import numpy as np
 import csv
 import os
-import subprocess
 import argparse
+from concurrent.futures import ProcessPoolExecutor
+import glob
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--indir", type=str)
@@ -13,19 +14,24 @@ parser.add_argument("--indir", type=str)
 args = parser.parse_args()
 indir = args.indir
 
+# python ~/nanoranger/scripts/store_nanopore_stats.py --i /n/scratch/users/m/meb521/20240423_1456_MC-114279_FAV13356/all_fastq_bigs/
+
 
 def process_fastq(fastq_file):
-
     t_ref = datetime(2024, 4, 23, 10, 20, 0)
 
     dir_name = os.path.dirname(fastq_file)
-    base_name = os.path.splitext(os.path.basename(f))[0]
+    base_name = os.path.basename(fastq_file)
+    csv_name = base_name.split(".fastq")[0]
 
     # Construct the output file path
-    output_file = os.path.join(dir_name, f"{base_name}.csv")
+    output_file = os.path.join(dir_name, f"{csv_name}.csv")
 
-    with pysam.FastxFile(fastq_file) as fh, open(output_file, "w", newline="") as csvfile:
+    print(output_file)
 
+    with pysam.FastxFile(fastq_file) as fh, open(
+        output_file, "w", newline=""
+    ) as csvfile:
         i = 0
         writer = csv.writer(csvfile)
         """
@@ -55,12 +61,11 @@ def process_fastq(fastq_file):
             if i > 400000:
                 break
 
-from concurrent.futures import ProcessPoolExecutor
-import glob
 
-fastq_files = glob.glob(f'{indir}/*.fastq.gz')  # Replace with your actual path
+fastq_files = glob.glob(f"{indir}/*.fastq.gz")
 
-print(fastq_files)
+for f in fastq_files:
+    print(f)
 
 with ProcessPoolExecutor() as executor:
     executor.map(process_fastq, fastq_files)
