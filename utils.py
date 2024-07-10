@@ -189,14 +189,17 @@ def decon_5p10XTCR(sample, outdir):
 
     # lclipV: clip into 5' direction of of V gene, this can be technically 0
 
-    lclipV = 40
+    lclipV = 60
 
     # rclipV: clip into direction of C gene, this will be covering CDR3 junction
     # and J gene region and additionally parts of C gene, optimize to clip on adapaterss
 
     rclipV = 80
 
-    const = "CGCTCTTCCGATCT" + 26 * "N" + "TTTCTTATATG"
+    #const = "CGCTCTTCCGATCT" + 26 * "N" + "TTTCTTATATG"
+    
+    #GEMx
+    const = "CGCTCTTCCGATCT" + 28 * "N" + "TTTCTTATATG"
 
     file = f"{outdir}/{sample}_trns.sam"
 
@@ -599,8 +602,16 @@ def write_bc_slideseq(sample, outdir, bc_file):
 
 
 def write_bc_5p10X(sample, outdir, bc_file):
-    bcs = pd.read_table(bc_file, names=["bc"])
-    bcs = bcs.bc.apply(lambda x: x.split("-")[0]).to_list()
+    
+    if '.h5' in bc_file:
+        import scanpy as sc
+        adata = sc.read_10x_h5(bc_file)
+        sc.pp.filter_cells(adata, min_genes=20)
+        bcs = [a[:16] for a in adata.obs.index]
+    if '.txt' in bc_file:
+        bcs = pd.read_table(bc_file, names=["bc"])
+        bcs = bcs.bc.apply(lambda x: x.split("-")[0]).to_list()
+        
     left = 30
     right = 40
     bc_pad = ["N" * left + b + "N" * right for b in bcs]
@@ -840,14 +851,17 @@ def process_matching_5p10XTCR(sample, outdir):
                 pairs = np.array(read.aligned_pairs)
                 pair_dic = dict(zip(pairs[:, 1], pairs[:, 0]))
                 # rstart.append(pair_dic[54])
-                umi = seq[pair_dic[46] : pair_dic[46] + 10]  # left pad +16 = 30 +16
+                #umi = seq[pair_dic[46] : pair_dic[46] + 10]  # left pad +16 = 30 +16
+                
+                umi = seq[pair_dic[46] : pair_dic[46] + 12]  # left pad +16 = 30 +16
             except:
                 umi = "N"
             try:
                 bcumi_dic[bc].append(umi)
             except:
                 bcumi_dic[bc] = [umi]
-            if len(umi) < 10:
+            #if len(umi) < 10:
+            if len(umi) < 12:
                 bad_bc.append(bc)
             else:
                 read_bcumi_dic[name] = [bc, umi]
