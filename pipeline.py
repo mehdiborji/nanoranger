@@ -435,6 +435,7 @@ if mode == "3pXCR_slideseq":
     print(
         "\n\n alignment to C gene with minimap2 and extracting combined VDJ, BC-UMI files \n\n"
     )
+    
     if split:
         merged_VDJ = f"{outdir}/{sample}_VDJ.fastq.gz"
 
@@ -522,9 +523,9 @@ if mode == "3pXCR_slideseq":
         )
 
     print("\n\n align BC-UMI to a reference of barcodes with STAR  \n\n")
-
+    
     matching_file = f"{outdir}/{sample}_matching.sam"
-
+    
     if os.path.isfile(matching_file):
         print(matching_file, " exists, will not align BC-UMI with STAR")
     else:
@@ -552,18 +553,18 @@ if mode == "3pXCR_slideseq":
         )
 
     print("\n\n generate clone-barcode-UMI table \n\n")
-
+    
     clones, cloneID = utils.clone_filt_slideseq(sample, outdir)
-
+    
     barcode_scores_pdf = f"{outdir}/{sample}_barcode_scores.pdf"
-
+    
     if os.path.isfile(barcode_scores_pdf):
         print(barcode_scores_pdf, " exists, will not extract matching sam")
     else:
         print(barcode_scores_pdf, " does not exist, will extract matching sam")
 
         utils.process_matching_slideseq_XCR(sample, outdir, cloneID)
-    """ """
+
 
 if mode == "3p10XTCR":
     if trns_ref is None:

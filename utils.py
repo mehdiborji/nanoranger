@@ -635,7 +635,7 @@ def process_matching_slideseq_XCR(sample, outdir, cloneID):
         tot += 1
         AS = read.get_tag("AS")
         all_AS.append([AS, read.flag])
-        if AS >= 28 and read.flag == 0:
+        if AS >= 30 and read.flag == 0:
             # reads.append(read)
             name = read.query_name
 

@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH -c 16
-#SBATCH --mem=8G
-#SBATCH -t 0:20:00
+#SBATCH --mem=16G
+#SBATCH -t 1:20:00
 #SBATCH -p short
 #SBATCH -o poreranger_3pXCR_slideseq_job_%A.out
 #SBATCH --account=chen_fec176
