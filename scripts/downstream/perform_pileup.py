@@ -59,11 +59,13 @@ for gene in muts.gene.to_list():
                 print("\ncoverage at base %s = %s" % (pileupcolumn.pos, pileupcolumn.n))
                 for pileupread in pileupcolumn.pileups:
                     if not pileupread.is_del and not pileupread.is_refskip:
-                        
-                        line = [pileupread.alignment.get_tag('CB'),pileupread.alignment.get_tag('UB'),
-                                pileupread.alignment.query_sequence[pileupread.query_position],
-                                pileupread.alignment.query_qualities[pileupread.query_position],pileupread.indel]
-                        writer.writerow(line)
+                        try:
+                            line = [pileupread.alignment.get_tag('CB'),pileupread.alignment.get_tag('UB'),
+                                    pileupread.alignment.query_sequence[pileupread.query_position],
+                                    pileupread.alignment.query_qualities[pileupread.query_position],pileupread.indel]
+                            writer.writerow(line)
+                        except KeyError:
+                            print("warning: read not processed")
                 break
     subprocess.call([ 'pigz', '-f', f'./{outdir}/{sample}_pileup_{gene}.csv'])
 
