@@ -8,7 +8,7 @@ The input data can be obtained through sequencing of 10x Genomics whole-transcri
 
 ![schema](nanoranger_schema.png)
 
-If you have a question about the software, or have any suggestions or ideas for new features or collaborations, feel free to create an issue here on GitHub, or write an email to mborji@broadinstitute.org.
+If you have a question about the software, or have any suggestions or ideas for new features or collaborations, feel free to create an issue here on GitHub, or write an email to mehdi.borji.86@gmail.com.
 
 ## Background
 
@@ -144,26 +144,6 @@ python ~/nanoranger/pipeline.py \
         --m 5p10XGEX \
         --t ~/nanoranger/data/CAR_CD28.fa \
         --g ~/nanoranger/data/CAR_CD28.fa
-```
-
-- Generation of **BAM** with barcode and UMI tags and **genes-by-cells matrix** from a **10x genomics Chromium 3'** library (GRCh38.primary_assembly.genome.fa.gz from https://www.gencodegenes.org/human/ can be used)
-
-```
-Coming Soon!
-```
-
-#### 3p10XGEX
-- Generation of **BAM** with barcode and UMI tags and **genes-by-cells matrix** from a **10x genomics Chromium 3'** library (GRCh38.primary_assembly.genome.fa.gz from https://www.gencodegenes.org/human/ can be used)
-
-```
-Coming Soon!
-```
-
-#### 3p10XTCR
-- Analysis of **TCRs** from a **10x genomics Chromium 3'** library (Human and Mouse C gene transcripts available in data folder and alignment supported by MiXCR)
-
-```
-Coming Soon!
 ```
 
 ## Downstream Analysis
