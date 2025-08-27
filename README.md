@@ -73,9 +73,9 @@ python ~/nanoranger/pipeline.py \
         --x mmu
 ```
 
-#### 5p10XTCR
+#### 5p10X_XCR
 
-- Analysis of **TCRs** from a **10x genomics Chromium 5'** library (Human and Mouse *V gene* transcripts available in data folder and provided to the pipeline with flag `--t` and VDJ alignment supported by MiXCR 3)
+- Analysis of **TCR/BCRs** from a **10x genomics Chromium 5'** library (Human and Mouse *V gene* transcripts available in data folder and provided to the pipeline with flag `--t` and VDJ alignment supported by MiXCR 3)
 
 ```
 python ~/nanoranger/pipeline.py \
@@ -83,7 +83,7 @@ python ~/nanoranger/pipeline.py \
         --i ~/nanoranger/sample_fastq/TCR3.fastq.gz \
         --o TCR \
         --e TCR \
-        --m 5p10XTCR \
+        --m 5p10X_XCR \
         --t ~/nanoranger/data/TR_V_human.fa \
         --x hsa
 ```
